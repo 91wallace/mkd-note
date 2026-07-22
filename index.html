@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Bloco de Notas Markdown</title>
+  
+  <!-- Parser de Markdown (Marked) -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --font-size: 16px;
+    }
+
+    body {
+      background-color: #000000;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      touch-action: none; /* Previne zoom nativo da página para capturar o gesto */
+    }
+
+    header {
+      padding: 10px 16px;
+      background-color: #121212;
+      border-bottom: 1px solid #27272a;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+    }
+
+    .status {
+      font-size: 0.8rem;
+      color: #a1a1aa;
+    }
+
+    .editor-container {
+      flex: 1;
+      display: flex;
+      width: 100%;
+      height: calc(100vh - 45px);
+    }
+
+    textarea, #preview {
+      flex: 1;
+      height: 100%;
+      padding: 20px;
+      font-size: var(--font-size);
+      line-height: 1.6;
+      overflow-y: auto;
+      touch-action: pan-y; /* Permite rolar o texto normalmente com um dedo */
+    }
+
+    textarea {
+      background-color: #000000;
+      color: #ffffff;
+      border: none;
+      border-right: 1px solid #27272a;
+      resize: none;
+      outline: none;
+      font-family: "Fira Code", monospace, monospace;
+    }
+
+    #preview {
+      background-color: #050505;
+      color: #e4e4e7;
+    }
+
+    /* Estilização básica do Markdown renderizado */
+    #preview h1, #preview h2, #preview h3 { margin-bottom: 0.5em; margin-top: 1em; color: #fff; }
+    #preview h1 { font-size: 2em; border-bottom: 1px solid #27272a; padding-bottom: 0.3em; }
+    #preview h2 { font-size: 1.5em; }
+    #preview p { margin-bottom: 1em; }
+    #preview code { background: #1f1f23; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+    #preview pre { background: #1f1f23; padding: 12px; border-radius: 6px; overflow-x: auto; margin-bottom: 1em; }
+    #preview pre code { background: none; padding: 0; }
+    #preview ul, #preview ol { margin-left: 20px; margin-bottom: 1em; }
+    #preview blockquote { border-left: 4px solid #3f3f46; padding-left: 12px; color: #a1a1aa; margin-bottom: 1em; }
+
+    /* Layout responsivo: empilha em telas pequenas */
+    @media (max-width: 768px) {
+      .editor-container {
+        flex-direction: column;
+      }
+      textarea {
+        border-right: none;
+        border-bottom: 1px solid #27272a;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <span style="font-weight: bold; font-size: 0.9rem;">Markdown Notepad</span>
+    <span id="save-status" class="status">Salvo</span>
+  </header>
+
+  <div class="editor-container" id="zoom-area">
+    <textarea id="editor" placeholder="Digite seu Markdown aqui..."></textarea>
+    <div id="preview"></div>
+  </div>
+
+  <script>
+    const editor = document.getElementById('editor');
+    const preview = document.getElementById('preview');
+    const zoomArea = document.getElementById('zoom-area');
+    const saveStatus = document.getElementById('save-status');
+
+    // 1. Carregar Estado Salvo
+    const savedText = localStorage.getItem('notepad_content');
+    const savedFontSize = localStorage.getItem('notepad_font_size');
+
+    if (savedText !== null) {
+      editor.value = savedText;
+    } else {
+      editor.value = "# Meu Bloco de Notas\n\nComece a digitar em **Markdown**...\n\n- Afaste ou aproxime dois dedos na tela para alterar o tamanho da fonte.\n- O texto é salvo automaticamente.";
+    }
+
+    let currentFontSize = savedFontSize ? parseFloat(savedFontSize) : 16;
+    updateFontSize(currentFontSize);
+    renderMarkdown();
+
+    // 2. Renderização do Markdown & Auto-save
+    function renderMarkdown() {
+      preview.innerHTML = marked.parse(editor.value);
+    }
+
+    editor.addEventListener('input', () => {
+      renderMarkdown();
+      saveStatus.textContent = "Salvando...";
+      localStorage.setItem('notepad_content', editor.value);
+      setTimeout(() => { saveStatus.textContent = "Salvo"; }, 500);
+    });
+
+    // 3. Atualizar tamanho da fonte via Variável CSS
+    function updateFontSize(size) {
+      // Limites de tamanho da fonte (min: 10px, max: 50px)
+      currentFontSize = Math.min(Math.max(size, 10), 50);
+      document.documentElement.style.setProperty('--font-size', `${currentFontSize}px`);
+      localStorage.setItem('notepad_font_size', currentFontSize);
+    }
+
+    // 4. Lógica de Pinch-to-Zoom (Toque Multi-touch)
+    let initialDistance = null;
+    let initialFontSize = 16;
+
+    zoomArea.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 2) {
+        initialDistance = getDistance(e.touches);
+        initialFontSize = currentFontSize;
+      }
+    }, { passive: true });
+
+    zoomArea.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 2 && initialDistance !== null) {
+        const newDistance = getDistance(e.touches);
+        const scale = newDistance / initialDistance;
+        updateFontSize(initialFontSize * scale);
+      }
+    }, { passive: true });
+
+    zoomArea.addEventListener('touchend', (e) => {
+      if (e.touches.length < 2) {
+        initialDistance = null;
+      }
+    }, { passive: true });
+
+    function getDistance(touches) {
+      const dx = touches[0].clientX - touches[1].clientX;
+      const dy = touches[0].clientY - touches[1].clientY;
+      return Math.hypot(dx, dy);
+    }
+
+    // 5. Suporte a Zoom com Ctrl + Scroll do Mouse (para uso em Desktop)
+    zoomArea.addEventListener('wheel', (e) => {
+      if (e.ctrlKey) {
+        e.preventDefault();
+        const delta = e.deltaY < 0 ? 1.1 : 0.9;
+        updateFontSize(currentFontSize * delta);
+      }
+    }, { passive: false });
+  </script>
+</body>
+</html>
+
