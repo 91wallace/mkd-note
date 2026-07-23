@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Bloco de Notas Markdown</title>
   
-  <!-- Parser e Sanitizador de Markdown -->
+  <!-- Parser de Markdown -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
   <style>
@@ -54,8 +54,18 @@
       border-color: #0055b3;
     }
 
-    /* Área Principal de Edição */
-    #editor-container {
+    /* Container dos Elementos */
+    .editor-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Estilo base compartilhado entre Editor e Preview */
+    #editor, #preview {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
       padding: 40px 20px 20px 20px;
@@ -63,46 +73,66 @@
       line-height: 1.6;
       overflow-y: auto;
       touch-action: pan-y;
+      border: none;
       outline: none;
     }
 
-    /* Estilo do modo Markdown Renderizado (WYSIWYG) */
-    .rendered-mode {
-      color: #e4e4e7;
-      background-color: #000000;
-    }
-
-    .rendered-mode h1, .rendered-mode h2, .rendered-mode h3 { 
-      margin-bottom: 0.5em; 
-      margin-top: 1em; 
-      color: #fff; 
-    }
-    .rendered-mode h1 { font-size: 2em; border-bottom: 1px solid #27272a; padding-bottom: 0.3em; }
-    .rendered-mode h2 { font-size: 1.5em; }
-    .rendered-mode p { margin-bottom: 1em; }
-    .rendered-mode code { background: #1f1f23; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
-    .rendered-mode pre { background: #1f1f23; padding: 12px; border-radius: 6px; overflow-x: auto; margin-bottom: 1em; }
-    .rendered-mode pre code { background: none; padding: 0; }
-    .rendered-mode ul, .rendered-mode ol { margin-left: 20px; margin-bottom: 1em; }
-    .rendered-mode blockquote { border-left: 4px solid #3f3f46; padding-left: 12px; color: #a1a1aa; margin-bottom: 1em; }
-
-    /* Estilo do modo Texto Cru (Raw) */
-    .raw-mode {
-      font-family: "Fira Code", monospace, monospace;
+    /* Textarea de Digitação */
+    #editor {
+      z-index: 2;
+      background: transparent;
+      color: transparent;
+      caret-color: #ffffff; /* Cor do cursor de digitação */
+      resize: none;
+      font-family: inherit;
       white-space: pre-wrap;
       word-wrap: break-word;
+    }
+
+    /* Modo Texto Cru (Raw) */
+    #editor.raw-mode {
       color: #a1a1aa;
       background-color: #000000;
+      font-family: "Fira Code", monospace, monospace;
+      z-index: 3;
     }
+
+    /* Preview Formatado */
+    #preview {
+      z-index: 1;
+      background-color: #000000;
+      color: #e4e4e7;
+      pointer-events: none; /* Deixa os cliques passarem para o textarea */
+    }
+
+    /* Estilização da Renderização Markdown */
+    #preview h1, #preview h2, #preview h3 { 
+      margin-bottom: 0.5em; 
+      margin-top: 0.8em; 
+      color: #fff; 
+    }
+    #preview h1 { font-size: 2em; border-bottom: 1px solid #27272a; padding-bottom: 0.3em; }
+    #preview h2 { font-size: 1.5em; }
+    #preview p { margin-bottom: 1em; }
+    #preview code { background: #1f1f23; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+    #preview pre { background: #1f1f23; padding: 12px; border-radius: 6px; overflow-x: auto; margin-bottom: 1em; }
+    #preview pre code { background: none; padding: 0; }
+    #preview ul, #preview ol { margin-left: 20px; margin-bottom: 1em; }
+    #preview blockquote { border-left: 4px solid #3f3f46; padding-left: 12px; color: #a1a1aa; margin-bottom: 1em; }
   </style>
 </head>
 <body>
 
   <button id="toggle-btn">markdown</button>
-  <div id="editor-container" contenteditable="true" class="rendered-mode" spellcheck="false"></div>
+  
+  <div class="editor-wrapper">
+    <textarea id="editor" spellcheck="false"></textarea>
+    <div id="preview"></div>
+  </div>
 
   <script>
-    const editor = document.getElementById('editor-container');
+    const editor = document.getElementById('editor');
+    const preview = document.getElementById('preview');
     const toggleBtn = document.getElementById('toggle-btn');
 
     let markdownRaw = localStorage.getItem('notepad_md_content') || "# Bloco de Notas\n\nEscreva diretamente aqui em **Markdown**.\n\n- O texto é renderizado na tela inteira.\n- Clique no botão `markdown` no canto superior direito para ver o código fonte bruto.\n- Afaste ou aproxime os dois dedos para ajustar o zoom da fonte.";
@@ -110,54 +140,47 @@
     let isRawMode = false;
     let currentFontSize = parseFloat(localStorage.getItem('notepad_font_size')) || 18;
 
+    // Inicialização
+    editor.value = markdownRaw;
     updateFontSize(currentFontSize);
-
-    // Renderiza inicialmente e atualiza o título
     renderFormatted();
     updateDocumentTitle();
 
-    // 1. Alternância de Modo (Raw / Renderizado)
+    // Sincronizar rolagem de tela entre Editor e Preview
+    editor.addEventListener('scroll', () => {
+      preview.scrollTop = editor.scrollTop;
+    });
+
+    // Evento de Digitação e Salvamento
+    editor.addEventListener('input', () => {
+      markdownRaw = editor.value;
+      saveToLocalStorage();
+      renderFormatted();
+      updateDocumentTitle();
+    });
+
+    // Alternância de Modo (Raw / Renderizado)
     toggleBtn.addEventListener('click', () => {
       isRawMode = !isRawMode;
 
       if (isRawMode) {
-        saveCurrentContent();
-        editor.innerText = markdownRaw;
-        editor.className = 'raw-mode';
+        editor.classList.add('raw-mode');
         toggleBtn.classList.add('active');
       } else {
-        markdownRaw = editor.innerText;
-        saveToLocalStorage();
-        renderFormatted();
-        editor.className = 'rendered-mode';
+        editor.classList.remove('raw-mode');
         toggleBtn.classList.remove('active');
+        renderFormatted();
       }
     });
-
-    // 2. Evento de Digitação e Salvamento
-    editor.addEventListener('input', () => {
-      saveCurrentContent();
-    });
-
-    function saveCurrentContent() {
-      if (isRawMode) {
-        markdownRaw = editor.innerText;
-      } else {
-        markdownRaw = getMarkdownFromDOM(editor);
-      }
-      saveToLocalStorage();
-      updateDocumentTitle();
-    }
 
     function renderFormatted() {
-      editor.innerHTML = marked.parse(markdownRaw);
+      preview.innerHTML = marked.parse(editor.value);
     }
 
     function saveToLocalStorage() {
       localStorage.setItem('notepad_md_content', markdownRaw);
     }
 
-    // Extrai o título do Markdown para usar na aba do navegador
     function updateDocumentTitle() {
       const match = markdownRaw.match(/^#+\s+(.*)/m);
       if (match && match[1]) {
@@ -168,11 +191,7 @@
       }
     }
 
-    function getMarkdownFromDOM(element) {
-      return element.innerText;
-    }
-
-    // 3. Controle de Zoom (Pinch-to-Zoom e Ctrl+Scroll)
+    // Controle de Zoom (Pinch-to-Zoom e Ctrl+Scroll)
     function updateFontSize(size) {
       currentFontSize = Math.min(Math.max(size, 10), 60);
       document.documentElement.style.setProperty('--font-size', `${currentFontSize}px`);
