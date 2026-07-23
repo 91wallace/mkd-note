@@ -1,0 +1,10 @@
+{
+  "appId": "com.criarte.blocodenotas",
+  "appName": "Bloco de Notas",
+  "webDir": "www",
+  "server": {
+    "url": "http://localhost:8000",
+    "cleartext": true
+  }
+}
+
