@@ -112,27 +112,22 @@
 
     updateFontSize(currentFontSize);
 
-    // Renderiza inicialmente
+    // Renderiza inicialmente e atualiza o título
     renderFormatted();
+    updateDocumentTitle();
 
     // 1. Alternância de Modo (Raw / Renderizado)
     toggleBtn.addEventListener('click', () => {
       isRawMode = !isRawMode;
 
       if (isRawMode) {
-        // Salva estado atual antes de mudar
         saveCurrentContent();
-        
-        // Exibe texto cru
         editor.innerText = markdownRaw;
         editor.className = 'raw-mode';
         toggleBtn.classList.add('active');
       } else {
-        // Captura o texto do modo cru
         markdownRaw = editor.innerText;
         saveToLocalStorage();
-
-        // Renderiza HTML formatado
         renderFormatted();
         editor.className = 'rendered-mode';
         toggleBtn.classList.remove('active');
@@ -148,10 +143,10 @@
       if (isRawMode) {
         markdownRaw = editor.innerText;
       } else {
-        // No modo renderizado, extraímos o texto mantendo quebras de linha
         markdownRaw = getMarkdownFromDOM(editor);
       }
       saveToLocalStorage();
+      updateDocumentTitle();
     }
 
     function renderFormatted() {
@@ -162,9 +157,18 @@
       localStorage.setItem('notepad_md_content', markdownRaw);
     }
 
-    // Extrai texto mantendo a estrutura quando editado no modo formatado
+    // Extrai o título do Markdown para usar na aba do navegador
+    function updateDocumentTitle() {
+      const match = markdownRaw.match(/^#+\s+(.*)/m);
+      if (match && match[1]) {
+        document.title = match[1].trim();
+      } else {
+        const firstLine = markdownRaw.trim().split('\n')[0] || '';
+        document.title = firstLine.substring(0, 30) || 'Bloco de Notas Markdown';
+      }
+    }
+
     function getMarkdownFromDOM(element) {
-      // Para manter a consistência simples sem seletores complexos de WYSIWYG
       return element.innerText;
     }
 
