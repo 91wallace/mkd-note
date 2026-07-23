@@ -17,6 +17,9 @@
 
     :root {
       --font-size: 18px;
+      --line-height: 1.6;
+      --padding-top: 55px;
+      --padding-side: 20px;
     }
 
     body {
@@ -190,32 +193,38 @@
       height: 100%;
     }
 
+    /* Regra unificada para alinhamento pixel a pixel */
     #editor, #preview {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      padding: 50px 20px 20px 20px;
+      padding: var(--padding-top) var(--padding-side) 20px var(--padding-side);
       font-size: var(--font-size);
-      line-height: 1.6;
+      line-height: var(--line-height);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       overflow-y: auto;
       touch-action: pan-y;
-      border: none;
+      border: 0;
+      margin: 0;
       outline: none;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      letter-spacing: normal;
+      tab-size: 2;
     }
 
+    /* Layer de Digitação */
     #editor {
       z-index: 2;
       background: transparent;
       color: transparent;
       caret-color: #ffffff;
       resize: none;
-      font-family: inherit;
-      white-space: pre-wrap;
-      word-wrap: break-word;
     }
 
+    /* Modo Texto Cru (Raw) */
     #editor.raw-mode {
       color: #a1a1aa;
       background-color: #000000;
@@ -223,6 +232,7 @@
       z-index: 3;
     }
 
+    /* Layer de Preview */
     #preview {
       z-index: 1;
       background-color: #000000;
@@ -230,11 +240,12 @@
       pointer-events: none;
     }
 
-    /* Estilização da Renderização Markdown */
+    /* Estilização interna do Markdown para manter proporção */
     #preview h1, #preview h2, #preview h3 { 
+      margin-top: 0;
       margin-bottom: 0.5em; 
-      margin-top: 0.8em; 
       color: #fff; 
+      line-height: 1.2;
     }
     #preview h1 { font-size: 2em; border-bottom: 1px solid #27272a; padding-bottom: 0.3em; }
     #preview h2 { font-size: 1.5em; }
@@ -397,7 +408,7 @@
       loadCurrentNote();
     }
 
-    // Sincronização de Scroll
+    // Sincronização Perfeita de Scroll
     editor.addEventListener('scroll', () => {
       preview.scrollTop = editor.scrollTop;
     });
