@@ -398,12 +398,20 @@
       loadCurrentNote();
     }
 
-    // Edição e Salvamento
+    // Função de limpeza estrita de texto para eliminar bugs de tags residuais no DOM
+    function getCleanTextFromContentEditable(element) {
+      let text = element.innerText || '';
+      // Normaliza quebras de linha e remove caracteres invisíveis de controle (\u00A0)
+      text = text.replace(/\u00A0/g, ' ').replace(/\r\n/g, '\n');
+      return text;
+    }
+
+    // Edição e Salvamento Tratado
     renderedEditor.addEventListener('input', () => {
       if (!isRawMode) {
         const note = notes.find(n => n.id === currentNoteId);
         if (note) {
-          note.content = renderedEditor.innerText;
+          note.content = getCleanTextFromContentEditable(renderedEditor);
           saveNotesToStorage();
           updateDocumentTitle(note.content);
           renderNotesList();
@@ -423,7 +431,7 @@
       }
     });
 
-    // Alternância de Modo (Raw / Renderizado)
+    // Alternância de Modo (Raw / Renderizado) com Limpeza e Re-renderização
     toggleBtn.addEventListener('click', () => {
       isRawMode = !isRawMode;
       const note = notes.find(n => n.id === currentNoteId);
