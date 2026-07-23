@@ -18,8 +18,6 @@
     :root {
       --font-size: 18px;
       --line-height: 1.6;
-      --padding-top: 55px;
-      --padding-side: 20px;
     }
 
     body {
@@ -186,75 +184,65 @@
       color: #ef4444;
     }
 
-    /* Container do Editor e Preview */
-    .editor-wrapper {
-      position: relative;
+    /* Container de Conteúdo Unificado */
+    .editor-container {
       width: 100%;
       height: 100%;
+      position: relative;
     }
 
-    /* Regra unificada para alinhamento pixel a pixel */
-    #editor, #preview {
+    #rendered-editor, #raw-editor {
+      width: 100%;
+      height: 100%;
+      padding: 55px 20px 20px 20px;
+      font-size: var(--font-size);
+      line-height: var(--line-height);
+      overflow-y: auto;
+      touch-action: pan-y;
+      border: none;
+      outline: none;
       position: absolute;
       top: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
-      padding: var(--padding-top) var(--padding-side) 20px var(--padding-side);
-      font-size: var(--font-size);
-      line-height: var(--line-height);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      overflow-y: auto;
-      touch-action: pan-y;
-      border: 0;
-      margin: 0;
-      outline: none;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      letter-spacing: normal;
-      tab-size: 2;
     }
 
-    /* Layer de Digitação */
-    #editor {
-      z-index: 2;
-      background: transparent;
-      color: transparent;
-      caret-color: #ffffff;
-      resize: none;
-    }
-
-    /* Modo Texto Cru (Raw) */
-    #editor.raw-mode {
-      color: #a1a1aa;
-      background-color: #000000;
-      font-family: "Fira Code", monospace, monospace;
-      z-index: 3;
-    }
-
-    /* Layer de Preview */
-    #preview {
-      z-index: 1;
+    /* Editor Renderizado (WYSIWYG) */
+    #rendered-editor {
       background-color: #000000;
       color: #e4e4e7;
-      pointer-events: none;
+      z-index: 2;
     }
 
-    /* Estilização interna do Markdown para manter proporção */
-    #preview h1, #preview h2, #preview h3 { 
-      margin-top: 0;
-      margin-bottom: 0.5em; 
+    #rendered-editor h1, #rendered-editor h2, #rendered-editor h3 { 
+      margin-top: 0.8em;
+      margin-bottom: 0.4em; 
       color: #fff; 
-      line-height: 1.2;
     }
-    #preview h1 { font-size: 2em; border-bottom: 1px solid #27272a; padding-bottom: 0.3em; }
-    #preview h2 { font-size: 1.5em; }
-    #preview p { margin-bottom: 1em; }
-    #preview code { background: #1f1f23; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
-    #preview pre { background: #1f1f23; padding: 12px; border-radius: 6px; overflow-x: auto; margin-bottom: 1em; }
-    #preview pre code { background: none; padding: 0; }
-    #preview ul, #preview ol { margin-left: 20px; margin-bottom: 1em; }
-    #preview blockquote { border-left: 4px solid #3f3f46; padding-left: 12px; color: #a1a1aa; margin-bottom: 1em; }
+    #rendered-editor h1 { font-size: 2em; border-bottom: 1px solid #27272a; padding-bottom: 0.3em; }
+    #rendered-editor h2 { font-size: 1.5em; }
+    #rendered-editor p { margin-bottom: 1em; }
+    #rendered-editor code { background: #1f1f23; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+    #rendered-editor pre { background: #1f1f23; padding: 12px; border-radius: 6px; overflow-x: auto; margin-bottom: 1em; }
+    #rendered-editor pre code { background: none; padding: 0; }
+    #rendered-editor ul, #rendered-editor ol { margin-left: 20px; margin-bottom: 1em; }
+    #rendered-editor blockquote { border-left: 4px solid #3f3f46; padding-left: 12px; color: #a1a1aa; margin-bottom: 1em; }
+
+    /* Editor de Código Bruto (Textarea) */
+    #raw-editor {
+      background-color: #000000;
+      color: #a1a1aa;
+      font-family: "Fira Code", monospace, monospace;
+      resize: none;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      z-index: 1;
+      display: none;
+    }
+
+    #raw-editor.active {
+      display: block;
+      z-index: 3;
+    }
   </style>
 </head>
 <body>
@@ -276,14 +264,14 @@
   </div>
 
   <!-- Área de Edição -->
-  <div class="editor-wrapper">
-    <textarea id="editor" spellcheck="false"></textarea>
-    <div id="preview"></div>
+  <div class="editor-container">
+    <div id="rendered-editor" contenteditable="true" spellcheck="false"></div>
+    <textarea id="raw-editor" spellcheck="false"></textarea>
   </div>
 
   <script>
-    const editor = document.getElementById('editor');
-    const preview = document.getElementById('preview');
+    const renderedEditor = document.getElementById('rendered-editor');
+    const rawEditor = document.getElementById('raw-editor');
     const toggleBtn = document.getElementById('toggle-btn');
     const menuBtn = document.getElementById('menu-btn');
     const sidebar = document.getElementById('sidebar');
@@ -297,7 +285,7 @@
     let isRawMode = false;
     let currentFontSize = parseFloat(localStorage.getItem('notepad_font_size')) || 18;
 
-    // Inicialização do Banco de Dados Local
+    // Inicialização
     if (notes.length === 0) {
       const initialNote = {
         id: Date.now().toString(),
@@ -313,27 +301,29 @@
     loadCurrentNote();
     updateFontSize(currentFontSize);
 
-    // Gerenciamento da Barra Lateral (Sidebar)
-    menuBtn.addEventListener('click', toggleSidebar);
-    overlay.addEventListener('click', closeSidebar);
-
-    function toggleSidebar() {
+    // Sidebar
+    menuBtn.addEventListener('click', () => {
       sidebar.classList.toggle('open');
       overlay.classList.toggle('active');
-    }
+    });
+
+    overlay.addEventListener('click', closeSidebar);
 
     function closeSidebar() {
       sidebar.classList.remove('open');
       overlay.classList.remove('active');
     }
 
-    // Gerenciamento de Notas
+    // Carregar Nota Ativa
     function loadCurrentNote() {
       const note = notes.find(n => n.id === currentNoteId);
       if (note) {
-        editor.value = note.content;
-        renderFormatted();
-        updateDocumentTitle();
+        if (isRawMode) {
+          rawEditor.value = note.content;
+        } else {
+          renderedEditor.innerHTML = marked.parse(note.content);
+        }
+        updateDocumentTitle(note.content);
         renderNotesList();
       }
     }
@@ -408,42 +398,49 @@
       loadCurrentNote();
     }
 
-    // Sincronização Perfeita de Scroll
-    editor.addEventListener('scroll', () => {
-      preview.scrollTop = editor.scrollTop;
-    });
-
-    // Edição e Auto-save
-    editor.addEventListener('input', () => {
-      const note = notes.find(n => n.id === currentNoteId);
-      if (note) {
-        note.content = editor.value;
-        saveNotesToStorage();
-        renderFormatted();
-        updateDocumentTitle();
-        renderNotesList();
+    // Edição e Salvamento
+    renderedEditor.addEventListener('input', () => {
+      if (!isRawMode) {
+        const note = notes.find(n => n.id === currentNoteId);
+        if (note) {
+          note.content = renderedEditor.innerText;
+          saveNotesToStorage();
+          updateDocumentTitle(note.content);
+          renderNotesList();
+        }
       }
     });
 
-    // Modo Raw / Renderizado
+    rawEditor.addEventListener('input', () => {
+      if (isRawMode) {
+        const note = notes.find(n => n.id === currentNoteId);
+        if (note) {
+          note.content = rawEditor.value;
+          saveNotesToStorage();
+          updateDocumentTitle(note.content);
+          renderNotesList();
+        }
+      }
+    });
+
+    // Alternância de Modo (Raw / Renderizado)
     toggleBtn.addEventListener('click', () => {
       isRawMode = !isRawMode;
+      const note = notes.find(n => n.id === currentNoteId);
+
       if (isRawMode) {
-        editor.classList.add('raw-mode');
+        if (note) rawEditor.value = note.content;
+        rawEditor.classList.add('active');
         toggleBtn.classList.add('active');
       } else {
-        editor.classList.remove('raw-mode');
+        if (note) renderedEditor.innerHTML = marked.parse(note.content);
+        rawEditor.classList.remove('active');
         toggleBtn.classList.remove('active');
-        renderFormatted();
       }
     });
 
-    function renderFormatted() {
-      preview.innerHTML = marked.parse(editor.value);
-    }
-
-    function updateDocumentTitle() {
-      document.title = getNoteTitle(editor.value);
+    function updateDocumentTitle(content) {
+      document.title = getNoteTitle(content);
     }
 
     // Zoom (Pinch-to-Zoom e Ctrl+Scroll)
