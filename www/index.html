@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Bloco de Notas Markdown</title>
   
-  <!-- Parser de Markdown -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- Parser de Markdown e Conversores (Offline) -->
+  <script src="marked.min.js"></script>
+  <script src="turndown.js"></script>
 
   <style>
     * {
@@ -447,10 +448,27 @@
       loadCurrentNote();
     }
 
+    // Inicialização do Turndown para conversão reversa de HTML para Markdown
+    const turndownService = new Turndown();
+    // Configurações básicas
+    turndownService.addRule('keepFormatting', {
+      filter: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'li', 'ul', 'ol', 'pre', 'code', 'blockquote', 'strong', 'em', 'a', 'img'],
+      replacement: function (content, node) {
+        return node.outerHTML; // Keep custom styles/behavior if any, otherwise standard rules apply
+      }
+    });
+    // Remove custom rules logic to use standard turndown rules:
+    const standardTurndown = new Turndown({ headingStyle: 'atx', codeBlockStyle: 'fenced' });
+
     function getCleanMarkdownText(element) {
       let rawText = element.innerText || '';
       let lines = rawText.replace(/\u00A0/g, ' ').replace(/\r\n/g, '\n').split('\n');
       return lines.map(line => line.trimEnd()).join('\n').trim();
+    }
+
+    function getMarkdownFromHtml(element) {
+      // Converte o HTML do painel visual de volta para Markdown usando Turndown
+      return standardTurndown.turndown(element.innerHTML);
     }
 
     // Controle de Modos e Visibilidade
@@ -504,7 +522,7 @@
       if (currentMode === 'visual') {
         // Salva estado do visual antes de trocar para raw
         const note = notes.find(n => n.id === currentNoteId);
-        if (note) note.content = getCleanMarkdownText(editVisualPane);
+        if (note) note.content = getMarkdownFromHtml(editVisualPane);
         setMode('raw');
       } else {
         // Salva estado do raw antes de trocar para visual
@@ -518,7 +536,7 @@
       const note = notes.find(n => n.id === currentNoteId);
       if (note) {
         if (currentMode === 'visual') {
-          note.content = getCleanMarkdownText(editVisualPane);
+          note.content = getMarkdownFromHtml(editVisualPane);
         } else if (currentMode === 'raw') {
           note.content = rawPane.value;
         }
@@ -533,7 +551,7 @@
     editVisualPane.addEventListener('input', () => {
       const note = notes.find(n => n.id === currentNoteId);
       if (note) {
-        note.content = getCleanMarkdownText(editVisualPane);
+        note.content = getMarkdownFromHtml(editVisualPane);
         saveNotesToStorage();
         updateDocumentTitle(note.content);
         renderNotesList();
