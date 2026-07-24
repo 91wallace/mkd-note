@@ -45,14 +45,18 @@
       border-radius: 4px;
       cursor: pointer;
       user-select: none;
-      transition: all 0.2s ease;
     }
 
-    #toggle-btn {
+    .top-actions {
       position: absolute;
       top: 12px;
       right: 12px;
       z-index: 100;
+      display: flex;
+      gap: 8px;
+    }
+
+    .action-btn {
       background-color: #1a1a1a;
       color: #888888;
       border: 1px solid #333333;
@@ -65,10 +69,16 @@
       font-family: inherit;
     }
 
-    #toggle-btn.active {
+    .action-btn.active {
       background-color: #0066cc;
       color: #ffffff;
       border-color: #0055b3;
+    }
+
+    .action-btn.primary {
+      background-color: #16a34a;
+      color: #ffffff;
+      border-color: #15803d;
     }
 
     /* Sidebar / Aba Lateral */
@@ -184,14 +194,14 @@
       color: #ef4444;
     }
 
-    /* Container de Conteúdo Unificado */
+    /* Containers de Visualização */
     .editor-container {
       width: 100%;
       height: 100%;
       position: relative;
     }
 
-    #rendered-editor, #raw-editor {
+    .view-pane {
       width: 100%;
       height: 100%;
       padding: 55px 20px 20px 20px;
@@ -204,54 +214,82 @@
       position: absolute;
       top: 0;
       left: 0;
+      display: none;
     }
 
-    /* Editor Renderizado (WYSIWYG) */
-    #rendered-editor {
+    .view-pane.active {
+      display: block;
+    }
+
+    /* 1. Modo Leitura (Renderizado Bloqueado) */
+    #read-pane {
       background-color: #000000;
       color: #e4e4e7;
-      z-index: 2;
+      user-select: text;
     }
 
-    #rendered-editor h1, #rendered-editor h2, #rendered-editor h3 { 
+    /* 2. Modo Edição Visual (WYSIWYG) */
+    #edit-visual-pane {
+      background-color: #000000;
+      color: #e4e4e7;
+    }
+
+    /* Estilização Interna do Markdown (Compartilhada) */
+    .markdown-body h1, .markdown-body h2, .markdown-body h3 { 
       margin-top: 0.8em;
       margin-bottom: 0.4em; 
       color: #fff; 
     }
-    #rendered-editor h1 { font-size: 2em; border-bottom: 1px solid #27272a; padding-bottom: 0.3em; }
-    #rendered-editor h2 { font-size: 1.5em; }
-    #rendered-editor p { margin-bottom: 1em; }
-    #rendered-editor code { background: #1f1f23; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
-    #rendered-editor pre { background: #1f1f23; padding: 12px; border-radius: 6px; overflow-x: auto; margin-bottom: 1em; }
-    #rendered-editor pre code { background: none; padding: 0; }
-    #rendered-editor ul, #rendered-editor ol { margin-left: 20px; margin-bottom: 1em; }
-    #rendered-editor blockquote { border-left: 4px solid #3f3f46; padding-left: 12px; color: #a1a1aa; margin-bottom: 1em; }
+    .markdown-body h1 { font-size: 2em; border-bottom: 1px solid #27272a; padding-bottom: 0.3em; }
+    .markdown-body h2 { font-size: 1.5em; }
+    .markdown-body h3 { font-size: 1.2em; }
+    .markdown-body p { margin-bottom: 1em; }
+    .markdown-body code { background: #1f1f23; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+    .markdown-body pre { background: #1f1f23; padding: 12px; border-radius: 6px; overflow-x: auto; margin-bottom: 1em; }
+    .markdown-body pre code { background: none; padding: 0; }
+    .markdown-body ul, .markdown-body ol { margin-left: 20px; margin-bottom: 1em; }
+    .markdown-body blockquote { border-left: 4px solid #3f3f46; padding-left: 12px; color: #a1a1aa; margin-bottom: 1em; }
 
-    /* Editor de Código Bruto (Textarea) */
-    #raw-editor {
+    /* Placeholders Esmaecidos */
+    #edit-visual-pane:empty:before {
+      content: "### Título\n\nComece a digitar...";
+      color: #4a4a4a;
+      white-space: pre-wrap;
+    }
+
+    #read-pane:empty:before {
+      content: "Nota vazia.";
+      color: #4a4a4a;
+    }
+
+    /* 3. Modo Código Markdown (Textarea Raw) */
+    #raw-pane {
       background-color: #000000;
       color: #a1a1aa;
       font-family: "Fira Code", monospace, monospace;
       resize: none;
       white-space: pre-wrap;
       word-wrap: break-word;
-      z-index: 1;
-      display: none;
     }
 
-    #raw-editor.active {
-      display: block;
-      z-index: 3;
+    #raw-pane::placeholder {
+      color: #4a4a4a;
     }
   </style>
 </head>
 <body>
 
-  <!-- Botões Principais -->
+  <!-- Botão Sidebar -->
   <button id="menu-btn">☰</button>
-  <button id="toggle-btn">Editar</button>
 
-  <!-- Overlay para fechar sidebar clicando fora -->
+  <!-- Botões de Ação Superiores -->
+  <div class="top-actions">
+    <button id="edit-btn" class="action-btn">Editar</button>
+    <button id="markdown-btn" class="action-btn" style="display: none;">Markdown</button>
+    <button id="save-btn" class="action-btn primary" style="display: none;">Salvar</button>
+  </div>
+
+  <!-- Overlay Sidebar -->
   <div id="overlay"></div>
 
   <!-- Sidebar Lateral -->
@@ -263,33 +301,46 @@
     <div class="notes-list" id="notes-list"></div>
   </div>
 
-  <!-- Área de Edição -->
+  <!-- Área de Conteúdo -->
   <div class="editor-container">
-    <div id="rendered-editor" contenteditable="true" spellcheck="false"></div>
-    <textarea id="raw-editor" spellcheck="false"></textarea>
+    <!-- Modo 1: Leitura Bloqueada -->
+    <div id="read-pane" class="view-pane markdown-body active"></div>
+
+    <!-- Modo 2: Edição Visual -->
+    <div id="edit-visual-pane" class="view-pane markdown-body" contenteditable="true" spellcheck="false"></div>
+
+    <!-- Modo 3: Código Raw -->
+    <textarea id="raw-pane" class="view-pane" spellcheck="false" placeholder="### Título&#10;&#10;Comece a digitar..."></textarea>
   </div>
 
   <script>
-    const renderedEditor = document.getElementById('rendered-editor');
-    const rawEditor = document.getElementById('raw-editor');
-    const toggleBtn = document.getElementById('toggle-btn');
+    const readPane = document.getElementById('read-pane');
+    const editVisualPane = document.getElementById('edit-visual-pane');
+    const rawPane = document.getElementById('raw-pane');
+
+    const editBtn = document.getElementById('edit-btn');
+    const markdownBtn = document.getElementById('markdown-btn');
+    const saveBtn = document.getElementById('save-btn');
+
     const menuBtn = document.getElementById('menu-btn');
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('overlay');
     const newNoteBtn = document.getElementById('new-note-btn');
     const notesListContainer = document.getElementById('notes-list');
 
-    // Estado da Aplicação
+    // Estado do App
     let notes = JSON.parse(localStorage.getItem('notepad_notes_list')) || [];
     let currentNoteId = localStorage.getItem('notepad_current_note_id');
-    let isRawMode = false;
+    
+    // 'read' | 'visual' | 'raw'
+    let currentMode = 'read';
     let currentFontSize = parseFloat(localStorage.getItem('notepad_font_size')) || 18;
 
     // Inicialização
     if (notes.length === 0) {
       const initialNote = {
         id: Date.now().toString(),
-        content: "# Primeira Nota\n\nEscreva diretamente aqui em **Markdown**.\n\n- Acesse a barra lateral no ícone `☰` para criar novas notas.\n- Alterne para edição bruta pelo botão `Editar`."
+        content: ""
       };
       notes.push(initialNote);
       currentNoteId = initialNote.id;
@@ -314,15 +365,11 @@
       overlay.classList.remove('active');
     }
 
-    // Carregar Nota Ativa
+    // Carregar Nota
     function loadCurrentNote() {
       const note = notes.find(n => n.id === currentNoteId);
       if (note) {
-        if (isRawMode) {
-          rawEditor.value = note.content;
-        } else {
-          renderedEditor.innerHTML = marked.parse(note.content);
-        }
+        setMode('read');
         updateDocumentTitle(note.content);
         renderNotesList();
       }
@@ -334,12 +381,13 @@
     }
 
     function getNoteTitle(content) {
+      if (!content || content.trim() === '') return 'Nova Nota';
       const match = content.match(/^#+\s+(.*)/m);
       if (match && match[1]) {
         return match[1].trim();
       }
       const firstLine = content.trim().split('\n')[0] || '';
-      return firstLine.substring(0, 24) || 'Nota sem título';
+      return firstLine.substring(0, 24) || 'Nova Nota';
     }
 
     function renderNotesList() {
@@ -379,13 +427,14 @@
     newNoteBtn.addEventListener('click', () => {
       const newNote = {
         id: Date.now().toString(),
-        content: '# Nova Nota\n\nComece a digitar...'
+        content: ''
       };
       notes.unshift(newNote);
       currentNoteId = newNote.id;
       saveNotesToStorage();
       loadCurrentNote();
       closeSidebar();
+      setMode('visual'); // Já abre no modo edição
     });
 
     function deleteNote(id) {
@@ -398,52 +447,106 @@
       loadCurrentNote();
     }
 
-    function getCleanTextFromContentEditable(element) {
-      let text = element.innerText || '';
-      text = text.replace(/\u00A0/g, ' ').replace(/\r\n/g, '\n');
-      return text;
+    function getCleanMarkdownText(element) {
+      let rawText = element.innerText || '';
+      let lines = rawText.replace(/\u00A0/g, ' ').replace(/\r\n/g, '\n').split('\n');
+      return lines.map(line => line.trimEnd()).join('\n').trim();
     }
 
-    // Edição e Salvamento Tratado
-    renderedEditor.addEventListener('input', () => {
-      if (!isRawMode) {
-        const note = notes.find(n => n.id === currentNoteId);
-        if (note) {
-          note.content = getCleanTextFromContentEditable(renderedEditor);
-          saveNotesToStorage();
-          updateDocumentTitle(note.content);
-          renderNotesList();
-        }
-      }
-    });
-
-    rawEditor.addEventListener('input', () => {
-      if (isRawMode) {
-        const note = notes.find(n => n.id === currentNoteId);
-        if (note) {
-          note.content = rawEditor.value;
-          saveNotesToStorage();
-          updateDocumentTitle(note.content);
-          renderNotesList();
-        }
-      }
-    });
-
-    // Alternância de Modo (Editar / Salvar)
-    toggleBtn.addEventListener('click', () => {
-      isRawMode = !isRawMode;
+    // Controle de Modos e Visibilidade
+    function setMode(mode) {
+      currentMode = mode;
       const note = notes.find(n => n.id === currentNoteId);
+      const content = note ? note.content : '';
 
-      if (isRawMode) {
-        if (note) rawEditor.value = note.content;
-        rawEditor.classList.add('active');
-        toggleBtn.classList.add('active');
-        toggleBtn.textContent = 'Salvar';
+      // Oculta todos
+      readPane.classList.remove('active');
+      editVisualPane.classList.remove('active');
+      rawPane.classList.remove('active');
+
+      if (mode === 'read') {
+        readPane.innerHTML = content ? marked.parse(content) : '';
+        readPane.classList.add('active');
+
+        editBtn.style.display = 'block';
+        markdownBtn.style.display = 'none';
+        saveBtn.style.display = 'none';
+        markdownBtn.classList.remove('active');
+
+      } else if (mode === 'visual') {
+        editVisualPane.innerHTML = content ? marked.parse(content) : '';
+        editVisualPane.classList.add('active');
+
+        editBtn.style.display = 'none';
+        markdownBtn.style.display = 'block';
+        saveBtn.style.display = 'block';
+        markdownBtn.classList.remove('active');
+        editVisualPane.focus();
+
+      } else if (mode === 'raw') {
+        rawPane.value = content;
+        rawPane.classList.add('active');
+
+        editBtn.style.display = 'none';
+        markdownBtn.style.display = 'block';
+        saveBtn.style.display = 'block';
+        markdownBtn.classList.add('active');
+        rawPane.focus();
+      }
+    }
+
+    // Eventos dos Botões
+    editBtn.addEventListener('click', () => {
+      setMode('visual');
+    });
+
+    markdownBtn.addEventListener('click', () => {
+      if (currentMode === 'visual') {
+        // Salva estado do visual antes de trocar para raw
+        const note = notes.find(n => n.id === currentNoteId);
+        if (note) note.content = getCleanMarkdownText(editVisualPane);
+        setMode('raw');
       } else {
-        if (note) renderedEditor.innerHTML = marked.parse(note.content);
-        rawEditor.classList.remove('active');
-        toggleBtn.classList.remove('active');
-        toggleBtn.textContent = 'Editar';
+        // Salva estado do raw antes de trocar para visual
+        const note = notes.find(n => n.id === currentNoteId);
+        if (note) note.content = rawPane.value;
+        setMode('visual');
+      }
+    });
+
+    saveBtn.addEventListener('click', () => {
+      const note = notes.find(n => n.id === currentNoteId);
+      if (note) {
+        if (currentMode === 'visual') {
+          note.content = getCleanMarkdownText(editVisualPane);
+        } else if (currentMode === 'raw') {
+          note.content = rawPane.value;
+        }
+        saveNotesToStorage();
+        updateDocumentTitle(note.content);
+        renderNotesList();
+      }
+      setMode('read');
+    });
+
+    // Auto-save durante a digitação
+    editVisualPane.addEventListener('input', () => {
+      const note = notes.find(n => n.id === currentNoteId);
+      if (note) {
+        note.content = getCleanMarkdownText(editVisualPane);
+        saveNotesToStorage();
+        updateDocumentTitle(note.content);
+        renderNotesList();
+      }
+    });
+
+    rawPane.addEventListener('input', () => {
+      const note = notes.find(n => n.id === currentNoteId);
+      if (note) {
+        note.content = rawPane.value;
+        saveNotesToStorage();
+        updateDocumentTitle(note.content);
+        renderNotesList();
       }
     });
 
