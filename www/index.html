@@ -449,16 +449,7 @@
     }
 
     // Inicialização do Turndown para conversão reversa de HTML para Markdown
-    const turndownService = new Turndown();
-    // Configurações básicas
-    turndownService.addRule('keepFormatting', {
-      filter: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'li', 'ul', 'ol', 'pre', 'code', 'blockquote', 'strong', 'em', 'a', 'img'],
-      replacement: function (content, node) {
-        return node.outerHTML; // Keep custom styles/behavior if any, otherwise standard rules apply
-      }
-    });
-    // Remove custom rules logic to use standard turndown rules:
-    const standardTurndown = new Turndown({ headingStyle: 'atx', codeBlockStyle: 'fenced' });
+    const turndownService = new TurndownService({ headingStyle: 'atx', codeBlockStyle: 'fenced' });
 
     function getCleanMarkdownText(element) {
       let rawText = element.innerText || '';
@@ -468,7 +459,7 @@
 
     function getMarkdownFromHtml(element) {
       // Converte o HTML do painel visual de volta para Markdown usando Turndown
-      return standardTurndown.turndown(element.innerHTML);
+      return turndownService.turndown(element.innerHTML);
     }
 
     // Controle de Modos e Visibilidade
