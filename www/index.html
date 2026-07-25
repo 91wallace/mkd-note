@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Bloco de Notas Markdown</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#000000">
   
   <!-- Capacitor Core Script -->
   <script src="capacitor.js"></script>
@@ -225,6 +227,30 @@
       border-color: #3f3f46;
     }
 
+    #install-app-btn {
+      background-color: #1a1a1c;
+      color: #a1a1aa;
+      border: 1px solid #27272a;
+      padding: 10px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+      margin-top: auto;
+      width: 100%;
+    }
+
+    #install-app-btn:hover {
+      background-color: #27272a;
+      color: #ffffff;
+      border-color: #3f3f46;
+    }
+
     .notebooks-list {
       display: flex;
       flex-direction: column;
@@ -386,9 +412,8 @@
     .markdown-body ul, .markdown-body ol { margin-left: 20px; margin-bottom: 1em; }
     .markdown-body blockquote { border-left: 4px solid #3f3f46; padding-left: 12px; color: #a1a1aa; margin-bottom: 1em; }
 
-    /* Placeholders Esmaecidos */
     #edit-visual-pane:empty:before {
-      content: "### Título\n\nComece a digitar...";
+      content: "### Título\a\aComece a digitar...";
       color: #4a4a4a;
       white-space: pre-wrap;
     }
@@ -449,6 +474,7 @@
 
     <button id="new-note-btn">+ Nova Nota</button>
     <div class="notes-list" id="notes-list"></div>
+    <button id="install-app-btn" style="display: none;">📲 Instalar no Chrome</button>
   </div>
 
   <!-- Área de Conteúdo -->
@@ -485,6 +511,7 @@
     const notebooksListContainer = document.getElementById('notebooks-list');
     const newNotebookBtn = document.getElementById('new-notebook-btn');
     const notebookHeader = document.getElementById('notebook-header');
+    const installAppBtn = document.getElementById('install-app-btn');
 
     // Detecta se está rodando no Capacitor com o plugin Filesystem
     const isCapacitor = typeof Capacitor !== 'undefined' && Capacitor.Plugins && Capacitor.Plugins.Filesystem;
@@ -1254,6 +1281,44 @@
         updateFontSize(currentFontSize * delta);
       }
     }, { passive: false });
+
+    // --- PWA / Instalação no Chrome ---
+    let deferredPrompt;
+
+    if ('serviceWorker' in navigator && !isCapacitor) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').then((reg) => {
+          console.log('Service Worker registrado com sucesso:', reg.scope);
+        }).catch((err) => {
+          console.warn('Erro ao registrar Service Worker:', err);
+        });
+      });
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (!isCapacitor && installAppBtn) {
+        installAppBtn.style.display = 'flex';
+      }
+    });
+
+    if (installAppBtn) {
+      installAppBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`Escolha do usuário sobre instalação: ${outcome}`);
+        deferredPrompt = null;
+        installAppBtn.style.display = 'none';
+      });
+    }
+
+    window.addEventListener('appinstalled', () => {
+      console.log('Aplicativo instalado com sucesso.');
+      deferredPrompt = null;
+      if (installAppBtn) installAppBtn.style.display = 'none';
+    });
   </script>
 </body>
 </html>
