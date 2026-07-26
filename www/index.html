@@ -36,25 +36,16 @@
       position: relative;
     }
 
-    /* Controles Superiores */
     #menu-btn {
       position: absolute;
-      top: 12px;
+      top: 20px;
       left: 12px;
       z-index: 100;
-      background-color: #1a1a1a;
-      color: #ffffff;
-      border: 1px solid #333333;
-      padding: 4px 10px;
-      font-size: 14px;
-      border-radius: 4px;
-      cursor: pointer;
-      user-select: none;
     }
 
     .top-actions {
       position: absolute;
-      top: 12px;
+      top: 20px;
       right: 12px;
       z-index: 100;
       display: flex;
@@ -65,8 +56,8 @@
       background-color: #1a1a1a;
       color: #888888;
       border: 1px solid #333333;
-      padding: 4px 10px;
-      font-size: 12px;
+      padding: 6px 14px;
+      font-size: 14px;
       border-radius: 4px;
       cursor: pointer;
       user-select: none;
@@ -84,6 +75,37 @@
       background-color: #16a34a;
       color: #ffffff;
       border-color: #15803d;
+    }
+
+    .fab-new-note {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 999;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background-color: #1a1a1a;
+      border: 2px dashed #444444;
+      color: #ffffff;
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+
+    .fab-new-note:hover {
+      background-color: #2c2c2e;
+      border-color: #666666;
+      transform: scale(1.05);
+    }
+
+    .fab-new-note:active {
+      transform: scale(0.95);
     }
 
     /* Sidebar / Aba Lateral */
@@ -303,6 +325,191 @@
       background-color: #0052a3;
     }
 
+    .sidebar-action-btn {
+      background-color: #1a1a1a;
+      color: #888888;
+      border: 1px solid #333333;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      margin: 0;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid #1f1f23;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-action-btn:hover {
+      background-color: #262626;
+      color: #ffffff;
+    }
+
+    #preferences-btn {
+      margin-top: 16px;
+      margin-bottom: 25px;
+    }
+
+    .sidebar-action-btn.active {
+      background-color: #0066cc;
+      color: #ffffff;
+      border-color: #0055b3;
+    }
+
+    /* Modal de Preferências */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      pointer-events: none;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-content {
+      background-color: #121214;
+      border: 1px solid #27272a;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 450px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+      transform: scale(0.95);
+      transition: transform 0.25s ease;
+    }
+
+    .modal-overlay.active .modal-content {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid #1f1f23;
+    }
+
+    .modal-header h2 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #ffffff;
+      margin: 0;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: #a1a1aa;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+
+    .close-btn:hover {
+      color: #ffffff;
+    }
+
+    .modal-body {
+      padding: 20px;
+    }
+
+    .setting-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+    }
+
+    .setting-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .setting-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: #ffffff;
+    }
+
+    .setting-description {
+      font-size: 12px;
+      color: #71717a;
+    }
+
+    /* Switch toggle style */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #27272a;
+      transition: .3s;
+      border-radius: 24px;
+      border: 1px solid #3f3f46;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 3px;
+      background-color: #a1a1aa;
+      transition: .3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: #0066cc;
+      border-color: #0055b3;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(20px);
+      background-color: #ffffff;
+    }
+
     #search-input {
       display: none;
     }
@@ -313,6 +520,7 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
+      min-height: 0;
     }
 
     .note-item {
@@ -413,7 +621,7 @@
     .markdown-body blockquote { border-left: 4px solid #3f3f46; padding-left: 12px; color: #a1a1aa; margin-bottom: 1em; }
 
     #edit-visual-pane:empty:before {
-      content: "### Título\a\aComece a digitar...";
+      content: "# Nova Nota\a\aComece a digitar...";
       color: #4a4a4a;
       white-space: pre-wrap;
     }
@@ -446,35 +654,71 @@
 <body>
 
   <!-- Botão Sidebar -->
-  <button id="menu-btn">☰</button>
+  <button id="menu-btn" class="action-btn">Notas</button>
 
   <!-- Botões de Ação Superiores -->
   <div class="top-actions">
     <button id="edit-btn" class="action-btn">Editar</button>
-    <button id="markdown-btn" class="action-btn" style="display: none;">Markdown</button>
     <button id="save-btn" class="action-btn primary" style="display: none;">Salvar</button>
   </div>
+
+  <!-- Botão Flutuante (FAB) Nova Nota -->
+  <button id="bottom-new-note-btn" class="fab-new-note" title="Nova Nota">+</button>
 
   <!-- Overlay Sidebar -->
   <div id="overlay"></div>
 
   <!-- Sidebar Lateral -->
   <div id="sidebar">
-    <div class="sidebar-header" id="notebook-header">
-      <span class="sidebar-title" id="active-notebook-title">Minhas Notas</span>
+    <div class="sidebar-header" style="cursor: default; display: none;">
+      <span class="sidebar-title" id="active-notebook-title" style="display: none;"></span>
       <span id="sync-indicator" style="display: none; font-size: 12px; margin-right: 8px; animation: spin 1.5s linear infinite; color: #a1a1aa; user-select: none;">🔄</span>
-      <span id="notebook-toggle-arrow">▼</span>
-    </div>
-    
-    <div id="notebooks-section" class="notebooks-section">
-      <button id="new-notebook-btn">+ Novo Caderno</button>
-      <button id="locate-notebook-btn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="6" y2="15"></line><circle cx="18" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><path d="M18 9a9 9 0 0 1-9 9"></path></svg>Fonte</button>
-      <div class="notebooks-list" id="notebooks-list"></div>
     </div>
 
-    <button id="new-note-btn">+ Nova Nota</button>
     <div class="notes-list" id="notes-list"></div>
-    <button id="install-app-btn" style="display: none;">📲 Instalar no Chrome</button>
+    <div class="sidebar-footer">
+      <button id="preferences-btn" class="sidebar-action-btn">Preferências</button>
+      <button id="install-app-btn" style="display: none;">📲 Instalar no Chrome</button>
+    </div>
+  </div>
+
+  <!-- Modal de Preferências -->
+  <div id="preferences-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Preferências</h2>
+        <button id="close-preferences-btn" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-title">Markdown Nativo</span>
+            <span class="setting-description">Abre novas notas diretamente em formato Markdown</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="pref-markdown-checkbox">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmação de Exclusão -->
+  <div id="delete-confirm-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Confirmar Exclusão</h2>
+        <button id="close-delete-modal-btn" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: #a1a1aa; font-size: 14px; margin-bottom: 24px; line-height: 1.5;" id="delete-modal-message">Deseja realmente excluir esta nota?</p>
+        <div style="display: flex; justify-content: flex-end; gap: 12px;">
+          <button id="cancel-delete-btn" class="action-btn">Cancelar</button>
+          <button id="confirm-delete-btn" class="action-btn primary" style="background-color: #ef4444; border-color: #dc2626;">Excluir</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Área de Conteúdo -->
@@ -486,7 +730,7 @@
     <div id="edit-visual-pane" class="view-pane markdown-body" contenteditable="true" spellcheck="false"></div>
 
     <!-- Modo 3: Código Raw -->
-    <textarea id="raw-pane" class="view-pane" spellcheck="false" placeholder="### Título&#10;&#10;Comece a digitar..."></textarea>
+    <textarea id="raw-pane" class="view-pane" spellcheck="false" placeholder="# Nova Nota&#10;&#10;Comece a digitar..."></textarea>
   </div>
 
   <script>
@@ -494,23 +738,29 @@
     const editVisualPane = document.getElementById('edit-visual-pane');
     const rawPane = document.getElementById('raw-pane');
 
-    const editBtn = document.getElementById('edit-btn');
-    const markdownBtn = document.getElementById('markdown-btn');
-    const saveBtn = document.getElementById('save-btn');
+    const preferencesBtn = document.getElementById('preferences-btn');
+    const preferencesModal = document.getElementById('preferences-modal');
+    const closePreferencesBtn = document.getElementById('close-preferences-btn');
+    const prefMarkdownCheckbox = document.getElementById('pref-markdown-checkbox');
 
+    const deleteConfirmModal = document.getElementById('delete-confirm-modal');
+    const closeDeleteModalBtn = document.getElementById('close-delete-modal-btn');
+    const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+    const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+    const deleteModalMessage = document.getElementById('delete-modal-message');
+    let noteIdToDelete = null;
+
+    let prefersMarkdown = localStorage.getItem('notepad_prefers_markdown') === 'true';
+    prefMarkdownCheckbox.checked = prefersMarkdown;
+
+    const editBtn = document.getElementById('edit-btn');
+    const saveBtn = document.getElementById('save-btn');
     const menuBtn = document.getElementById('menu-btn');
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('overlay');
     const newNoteBtn = document.getElementById('new-note-btn');
     const notesListContainer = document.getElementById('notes-list');
-    const locateNotebookBtn = document.getElementById('locate-notebook-btn');
-
     const activeNotebookTitle = document.getElementById('active-notebook-title');
-    const notebookToggleArrow = document.getElementById('notebook-toggle-arrow');
-    const notebooksSection = document.getElementById('notebooks-section');
-    const notebooksListContainer = document.getElementById('notebooks-list');
-    const newNotebookBtn = document.getElementById('new-notebook-btn');
-    const notebookHeader = document.getElementById('notebook-header');
     const installAppBtn = document.getElementById('install-app-btn');
 
     // Detecta se está rodando no Capacitor com o plugin Filesystem
@@ -772,144 +1022,9 @@
     let currentMode = 'read';
     let currentFontSize = parseFloat(localStorage.getItem('notepad_font_size')) || 18;
 
-    // Toggle aba de cadernos
-    notebookHeader.addEventListener('click', () => {
-      notebooksSection.classList.toggle('open');
-      notebookToggleArrow.classList.toggle('open');
-    });
-
-    // Criar Caderno
-    newNotebookBtn.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      const name = prompt("Digite o nome do novo caderno:");
-      if (name && name.trim()) {
-        const created = await NotebookStorage.createNotebook(name);
-        if (created) {
-          NotebookStorage.activeNotebook = name.trim();
-          await NotebookStorage.loadNotes();
-          activeNotebookTitle.textContent = NotebookStorage.activeNotebook;
-          notebooksSection.classList.remove('open');
-          notebookToggleArrow.classList.remove('open');
-          
-          currentNoteId = NotebookStorage.notes[0]?.id || null;
-          saveNotesToStorage();
-          loadCurrentNote();
-          renderNotebooksList();
-        } else {
-          alert("O caderno já existe ou o nome é inválido.");
-        }
-      }
-    });
-
-    // Localizar Caderno
-    async function locateNotebookFolder() {
-      if (isCapacitor) {
-        try {
-          const result = await Capacitor.Plugins.FilePicker.pickDirectory();
-          if (result && result.path) {
-            // Extrai o nome da pasta a partir do caminho/URI
-            const pathDecoded = decodeURIComponent(result.path);
-            const parts = pathDecoded.split('/');
-            let lastPart = parts.pop() || parts.pop() || '';
-            if (lastPart.includes(':')) {
-              lastPart = lastPart.split(':').pop();
-            }
-            const folderName = lastPart || 'Pasta Selecionada';
-            
-            // Registra esta pasta nas rotas/caminhos de cadernos
-            NotebookStorage.notebookPaths[folderName] = {
-              path: result.path,
-              isExternal: true
-            };
-            localStorage.setItem('notepad_notebook_paths', JSON.stringify(NotebookStorage.notebookPaths));
-
-            const created = await NotebookStorage.createNotebook(folderName);
-            NotebookStorage.activeNotebook = folderName;
-            await NotebookStorage.loadNotes();
-            activeNotebookTitle.textContent = folderName;
-            notebooksSection.classList.remove('open');
-            notebookToggleArrow.classList.remove('open');
-            currentNoteId = NotebookStorage.notes[0]?.id || null;
-            saveNotesToStorage();
-            loadCurrentNote();
-            renderNotebooksList();
-          }
-          return;
-        } catch (err) {
-          console.error("Erro ao selecionar diretório pelo FilePicker", err);
-          alert("Não foi possível acessar a pasta selecionada: " + err.message);
-          return;
-        }
-      }
-
-      if (typeof window.showDirectoryPicker === 'function') {
-        try {
-          const dirHandle = await window.showDirectoryPicker();
-          const folderName = dirHandle.name;
-          const created = await NotebookStorage.createNotebook(folderName);
-          if (created || NotebookStorage.notebooks.includes(folderName)) {
-            NotebookStorage.activeNotebook = folderName;
-            await NotebookStorage.loadNotes();
-            activeNotebookTitle.textContent = folderName;
-            notebooksSection.classList.remove('open');
-            notebookToggleArrow.classList.remove('open');
-            currentNoteId = NotebookStorage.notes[0]?.id || null;
-            saveNotesToStorage();
-            loadCurrentNote();
-            renderNotebooksList();
-          }
-          return;
-        } catch (err) {
-          if (err.name === 'AbortError') return;
-          console.warn("showDirectoryPicker falhou, tentando fallback", err);
-        }
-      }
-
-      const name = prompt("Digite o nome da pasta existente no seu diretório 'Documentos' para sincronizar como caderno:");
-      if (name && name.trim()) {
-        const folderName = name.trim();
-        await NotebookStorage.createNotebook(folderName);
-        NotebookStorage.activeNotebook = folderName;
-        await NotebookStorage.loadNotes();
-        activeNotebookTitle.textContent = folderName;
-        notebooksSection.classList.remove('open');
-        notebookToggleArrow.classList.remove('open');
-        currentNoteId = NotebookStorage.notes[0]?.id || null;
-        saveNotesToStorage();
-        loadCurrentNote();
-        renderNotebooksList();
-      }
-    }
-
-    // Renderizar Cadernos
+    // Renderizar Cadernos (removido)
     function renderNotebooksList() {
-      notebooksListContainer.innerHTML = '';
-      NotebookStorage.notebooks.forEach(notebook => {
-        const item = document.createElement('div');
-        item.className = `notebook-item ${notebook === NotebookStorage.activeNotebook ? 'active' : ''}`;
-        
-        const titleSpan = document.createElement('span');
-        titleSpan.className = 'notebook-item-title';
-        titleSpan.textContent = notebook;
-
-        item.appendChild(titleSpan);
-
-        item.onclick = async (e) => {
-          e.stopPropagation();
-          NotebookStorage.activeNotebook = notebook;
-          await NotebookStorage.loadNotes();
-          activeNotebookTitle.textContent = notebook;
-          notebooksSection.classList.remove('open');
-          notebookToggleArrow.classList.remove('open');
-          
-          currentNoteId = localStorage.getItem('notepad_current_note_id_' + notebook) || NotebookStorage.notes[0]?.id || null;
-          saveNotesToStorage();
-          loadCurrentNote();
-          renderNotebooksList();
-        };
-
-        notebooksListContainer.appendChild(item);
-      });
+      // No-op
     }
 
     // Sidebar close
@@ -954,13 +1069,10 @@
     }
 
     function getNoteTitle(content) {
-      if (!content || content.trim() === '') return 'Nova Nota';
-      const match = content.match(/^#+\s+(.*)/m);
-      if (match && match[1]) {
-        return match[1].trim();
-      }
-      const firstLine = content.trim().split('\n')[0] || '';
-      return firstLine.substring(0, 24) || 'Nova Nota';
+      if (!content || content.trim() === '') return 'Nota Sem Título';
+      const cleanContent = content.replace(/^#+\s+/g, '').trim();
+      const firstLine = cleanContent.split('\n')[0] || '';
+      return firstLine.substring(0, 20).trim() || 'Nota Sem Título';
     }
 
     function sanitizeFilename(title) {
@@ -1037,9 +1149,9 @@
       });
     }
 
-    locateNotebookBtn.addEventListener('click', locateNotebookFolder);
 
-    newNoteBtn.addEventListener('click', async () => {
+
+    const handleNewNote = async () => {
       let desiredTitle = 'Nova Nota';
       let uniqueFilename = await getUniqueFilenameFS(NotebookStorage.activeNotebook, desiredTitle, null);
       let newId = uniqueFilename.replace('.md', '');
@@ -1054,25 +1166,62 @@
       await saveNotesToStorage();
       loadCurrentNote();
       closeSidebar();
-      setMode('visual'); // Já abre no modo edição
-    });
+      setMode(prefersMarkdown ? 'raw' : 'visual'); // Já abre no modo edição preferido
+    };
+
+    if (newNoteBtn) {
+      newNoteBtn.addEventListener('click', handleNewNote);
+    }
+    
+    const bottomNewNoteBtn = document.getElementById('bottom-new-note-btn');
+    if (bottomNewNoteBtn) {
+      bottomNewNoteBtn.addEventListener('click', handleNewNote);
+    }
 
     async function deleteNote(id) {
       if (NotebookStorage.notes.length <= 1) return;
       const note = NotebookStorage.notes.find(n => n.id === id);
       const title = getNoteTitle(note ? note.content : '');
-      if (!confirm(`Deseja realmente excluir a nota "${title}"?`)) return;
-
-      NotebookStorage.notes = NotebookStorage.notes.filter(n => n.id !== id);
-      if (isCapacitor) {
-        await NotebookStorage.deleteNoteFS(id);
-      }
-      if (currentNoteId === id) {
-        currentNoteId = NotebookStorage.notes[0].id;
-      }
-      saveNotesToStorage();
-      loadCurrentNote();
+      
+      noteIdToDelete = id;
+      deleteModalMessage.textContent = `Deseja realmente excluir a nota "${title}"?`;
+      deleteConfirmModal.classList.add('active');
+      deleteConfirmModal.style.display = 'flex';
     }
+
+    const closeDeleteModal = () => {
+      deleteConfirmModal.classList.remove('active');
+      setTimeout(() => {
+        if (!deleteConfirmModal.classList.contains('active')) {
+          deleteConfirmModal.style.display = 'none';
+        }
+      }, 250);
+      noteIdToDelete = null;
+    };
+
+    closeDeleteModalBtn.addEventListener('click', closeDeleteModal);
+    cancelDeleteBtn.addEventListener('click', closeDeleteModal);
+    deleteConfirmModal.addEventListener('click', (e) => {
+      if (e.target === deleteConfirmModal) {
+        closeDeleteModal();
+      }
+    });
+
+    confirmDeleteBtn.addEventListener('click', async () => {
+      if (noteIdToDelete) {
+        const id = noteIdToDelete;
+        NotebookStorage.notes = NotebookStorage.notes.filter(n => n.id !== id);
+        if (isCapacitor) {
+          await NotebookStorage.deleteNoteFS(id);
+        }
+        if (currentNoteId === id) {
+          currentNoteId = NotebookStorage.notes[0].id;
+        }
+        saveNotesToStorage();
+        loadCurrentNote();
+        closeDeleteModal();
+      }
+    });
 
     // Inicialização do Turndown para conversão reversa de HTML para Markdown
     const turndownService = new TurndownService({ headingStyle: 'atx', codeBlockStyle: 'fenced' });
@@ -1104,18 +1253,14 @@
         readPane.classList.add('active');
 
         editBtn.style.display = 'block';
-        markdownBtn.style.display = 'none';
         saveBtn.style.display = 'none';
-        markdownBtn.classList.remove('active');
 
       } else if (mode === 'visual') {
         editVisualPane.innerHTML = content ? marked.parse(content) : '';
         editVisualPane.classList.add('active');
 
         editBtn.style.display = 'none';
-        markdownBtn.style.display = 'block';
         saveBtn.style.display = 'block';
-        markdownBtn.classList.remove('active');
         editVisualPane.focus();
 
       } else if (mode === 'raw') {
@@ -1123,29 +1268,55 @@
         rawPane.classList.add('active');
 
         editBtn.style.display = 'none';
-        markdownBtn.style.display = 'block';
         saveBtn.style.display = 'block';
-        markdownBtn.classList.add('active');
         rawPane.focus();
       }
     }
 
     // Eventos dos Botões
     editBtn.addEventListener('click', () => {
-      setMode('visual');
+      setMode(prefersMarkdown ? 'raw' : 'visual');
     });
 
-    markdownBtn.addEventListener('click', () => {
-      if (currentMode === 'visual') {
-        // Salva estado do visual antes de trocar para raw
-        const note = NotebookStorage.notes.find(n => n.id === currentNoteId);
-        if (note) note.content = getMarkdownFromHtml(editVisualPane);
-        setMode('raw');
+    // Modal de Preferências Listeners
+    preferencesBtn.addEventListener('click', () => {
+      preferencesModal.classList.add('active');
+      preferencesModal.style.display = 'flex';
+      closeSidebar();
+    });
+
+    const closePreferences = () => {
+      preferencesModal.classList.remove('active');
+      setTimeout(() => {
+        if (!preferencesModal.classList.contains('active')) {
+          preferencesModal.style.display = 'none';
+        }
+      }, 250);
+    };
+
+    closePreferencesBtn.addEventListener('click', closePreferences);
+    preferencesModal.addEventListener('click', (e) => {
+      if (e.target === preferencesModal) {
+        closePreferences();
+      }
+    });
+
+    prefMarkdownCheckbox.addEventListener('change', () => {
+      prefersMarkdown = prefMarkdownCheckbox.checked;
+      localStorage.setItem('notepad_prefers_markdown', prefersMarkdown);
+      
+      if (prefersMarkdown) {
+        if (currentMode === 'visual') {
+          const note = NotebookStorage.notes.find(n => n.id === currentNoteId);
+          if (note) note.content = getMarkdownFromHtml(editVisualPane);
+          setMode('raw');
+        }
       } else {
-        // Salva estado do raw antes de trocar para visual
-        const note = NotebookStorage.notes.find(n => n.id === currentNoteId);
-        if (note) note.content = rawPane.value;
-        setMode('visual');
+        if (currentMode === 'raw') {
+          const note = NotebookStorage.notes.find(n => n.id === currentNoteId);
+          if (note) note.content = rawPane.value;
+          setMode('visual');
+        }
       }
     });
 
@@ -1217,7 +1388,7 @@
     });
 
     function updateDocumentTitle(content) {
-      document.title = getNoteTitle(content);
+      document.title = "Bloco de Notas";
     }
 
     // Zoom (Pinch-to-Zoom e Ctrl+Scroll)
