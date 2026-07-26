@@ -621,9 +621,22 @@
     .markdown-body blockquote { border-left: 4px solid #3f3f46; padding-left: 12px; color: #a1a1aa; margin-bottom: 1em; }
 
     #edit-visual-pane:empty:before {
-      content: "# Nova Nota\a\aComece a digitar...";
+      content: "# Nova Nota";
+      font-size: 2em;
+      font-weight: bold;
       color: #4a4a4a;
-      white-space: pre-wrap;
+      display: block;
+      border-bottom: 1px solid #27272a;
+      padding-bottom: 0.3em;
+      margin-bottom: 0.4em;
+      margin-top: 0.8em;
+    }
+
+    #edit-visual-pane:empty:after {
+      content: "Comece a digitar...";
+      font-size: 1em;
+      color: #4a4a4a;
+      display: block;
     }
 
     #read-pane:empty:before {
