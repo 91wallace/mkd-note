@@ -5,8 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Bloco de Notas Markdown</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#000000">
+  <link rel="shortcut icon" type="image/png" href="icon-192.png">
+  <meta name="theme-color" content="#0a0a0c">
   
+  <!-- Google Fonts & Fira Code para o editor raw -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
   <!-- Capacitor Core Script -->
   <script src="capacitor.js"></script>
   <!-- Parser de Markdown e Conversores (Offline) -->
@@ -14,21 +20,42 @@
   <script src="turndown.js"></script>
 
   <style>
+    :root {
+      --bg-primary: #0a0a0c;
+      --bg-secondary: rgba(18, 18, 22, 0.85);
+      --bg-tertiary: #16161f;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(255, 255, 255, 0.15);
+      --text-primary: #f3f4f6;
+      --text-secondary: #9ca3af;
+      --text-muted: #6b7280;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+      --accent-glow: rgba(79, 70, 229, 0.4);
+      --success: #10b981;
+      --success-hover: #059669;
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'Fira Code', monospace;
+      
+      --font-size: 18px;
+      --line-height: 1.6;
+      --header-height: 64px;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-    }
-
-    :root {
-      --font-size: 18px;
-      --line-height: 1.6;
+      -webkit-tap-highlight-color: transparent;
+      outline: none;
     }
 
     body {
-      background-color: #000000;
-      color: #ffffff;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
       height: 100vh;
       width: 100vw;
       overflow: hidden;
@@ -36,72 +63,106 @@
       position: relative;
     }
 
-    #menu-btn {
-      position: absolute;
-      top: 20px;
-      left: 12px;
+    /* Top Header Bar */
+    .app-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--header-height);
+      background: rgba(10, 10, 12, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
       z-index: 100;
     }
 
+    /* Elementos Flutuantes originais reajustados para layout fixo */
+    #menu-btn {
+      position: static;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+    }
+
     .top-actions {
-      position: absolute;
-      top: 20px;
-      right: 12px;
-      z-index: 100;
+      position: static;
       display: flex;
       gap: 8px;
     }
 
     .action-btn {
-      background-color: #1a1a1a;
-      color: #888888;
-      border: 1px solid #333333;
-      padding: 6px 14px;
+      background-color: var(--bg-tertiary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      padding: 8px 16px;
       font-size: 14px;
-      border-radius: 4px;
+      font-weight: 500;
+      border-radius: 8px;
       cursor: pointer;
       user-select: none;
-      transition: all 0.2s ease;
-      font-family: inherit;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      font-family: var(--font-sans);
+    }
+
+    .action-btn:hover {
+      background-color: var(--bg-secondary);
+      border-color: var(--border-hover);
+      transform: translateY(-1px);
+    }
+
+    .action-btn:active {
+      transform: translateY(1px);
     }
 
     .action-btn.active {
-      background-color: #0066cc;
+      background-color: var(--accent);
       color: #ffffff;
-      border-color: #0055b3;
+      border-color: var(--accent);
+      box-shadow: 0 0 12px var(--accent-glow);
     }
 
     .action-btn.primary {
-      background-color: #16a34a;
+      background-color: var(--success);
       color: #ffffff;
-      border-color: #15803d;
+      border-color: var(--success);
     }
 
+    .action-btn.primary:hover {
+      background-color: var(--success-hover);
+      border-color: var(--success-hover);
+    }
+
+    /* FAB - Botão Flutuante */
     .fab-new-note {
       position: fixed;
-      bottom: 24px;
-      right: 24px;
-      z-index: 999;
-      width: 48px;
-      height: 48px;
+      bottom: 28px;
+      right: 28px;
+      z-index: 99;
+      width: 56px;
+      height: 56px;
       border-radius: 50%;
-      background-color: #1a1a1a;
-      border: 2px dashed #444444;
+      background: linear-gradient(135deg, var(--accent), #6366f1);
+      border: none;
       color: #ffffff;
-      font-size: 24px;
+      font-size: 28px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       user-select: none;
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 8px 24px var(--accent-glow);
     }
 
     .fab-new-note:hover {
-      background-color: #2c2c2e;
-      border-color: #666666;
-      transform: scale(1.05);
+      transform: scale(1.1) rotate(90deg);
+      box-shadow: 0 12px 32px var(--accent-glow);
     }
 
     .fab-new-note:active {
@@ -110,34 +171,135 @@
 
     /* Sidebar / Aba Lateral */
     #sidebar {
-      position: absolute;
+      position: fixed;
       top: 0;
-      left: -290px;
-      width: 280px;
-      height: 100%;
-      background-color: #0c0c0c;
-      border-right: 1px solid #1f1f23;
+      left: -300px;
+      width: 290px;
+      height: 100vh;
+      height: 100dvh;
+      background: var(--bg-secondary);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-right: 1px solid var(--border-color);
       z-index: 200;
       transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex;
       flex-direction: column;
-      padding: 16px;
-      box-shadow: 10px 0 30px rgba(0, 0, 0, 0.6);
+      padding: 24px 20px calc(24px + env(safe-area-inset-bottom)) 20px;
+      box-shadow: 15px 0 40px rgba(0, 0, 0, 0.8);
     }
 
     #sidebar.open {
       left: 0;
     }
 
-    #overlay {
+    .sidebar-brand {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .sidebar-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+    }
+
+    .search-box-container {
+      position: relative;
+      width: 100%;
+      margin-bottom: 12px;
+    }
+
+    .search-box-container input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 10px 14px 10px 38px;
+      color: var(--text-primary);
+      font-size: 14px;
+      font-family: var(--font-sans);
+      outline: none;
+      transition: all 0.25s ease;
+    }
+
+    .search-box-container input:focus {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--accent);
+      box-shadow: 0 0 10px rgba(79, 70, 229, 0.15);
+    }
+
+    .search-icon {
       position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    /* Toolbar de Formatação Rápida */
+    .format-toolbar {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(18, 18, 22, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 6px 12px;
+      display: flex;
+      gap: 8px;
+      z-index: 10;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .format-toolbar.visible {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .format-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-family: var(--font-sans);
+      font-weight: 600;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .format-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+    }
+
+    #overlay {
+      position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
       z-index: 150;
       opacity: 0;
       visibility: hidden;
@@ -149,237 +311,133 @@
       visibility: visible;
     }
 
-    .sidebar-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #1f1f23;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .sidebar-title {
-      font-size: 16px;
-      font-weight: bold;
-      color: #ffffff;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    .notes-list {
       flex: 1;
-    }
-
-    #notebook-toggle-arrow {
-      font-size: 12px;
-      color: #71717a;
-      transition: transform 0.25s ease;
-      margin-left: 8px;
-    }
-
-    #notebook-toggle-arrow.open {
-      transform: rotate(180deg);
-    }
-
-    #notebooks-section {
+      overflow-y: auto;
       display: flex;
       flex-direction: column;
       gap: 8px;
-      max-height: 0;
-      opacity: 0;
-      overflow: hidden;
-      margin-bottom: 0;
-      padding-bottom: 0;
-      border-bottom: 1px solid transparent;
-      transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-                  opacity 0.25s linear,
-                  margin-bottom 0.35s ease,
-                  padding-bottom 0.35s ease,
-                  border-color 0.35s ease;
+      margin-top: 20px;
+      padding-right: 4px;
     }
 
-    #notebooks-section.open {
-      max-height: 290px;
-      opacity: 1;
-      margin-bottom: 16px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid #1f1f23;
+    /* Scrollbar minimalista */
+    .notes-list::-webkit-scrollbar, .view-pane::-webkit-scrollbar {
+      width: 6px;
+    }
+    .notes-list::-webkit-scrollbar-track, .view-pane::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .notes-list::-webkit-scrollbar-thumb, .view-pane::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+    .notes-list::-webkit-scrollbar-thumb:hover, .view-pane::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
     }
 
-    #new-notebook-btn {
-      background-color: #161618;
-      color: #a1a1aa;
-      border: 1px solid #27272a;
-      padding: 8px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 500;
-      text-align: center;
-      transition: all 0.2s;
-    }
-
-    #new-notebook-btn:hover {
-      background-color: #27272a;
-      color: #ffffff;
-      border-color: #3f3f46;
-    }
-
-    #locate-notebook-btn {
-      background-color: #161618;
-      color: #a1a1aa;
-      border: 1px solid #27272a;
-      padding: 8px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      transition: all 0.2s;
-      margin-top: 4px;
-      width: 100%;
-    }
-
-    #locate-notebook-btn:hover {
-      background-color: #27272a;
-      color: #ffffff;
-      border-color: #3f3f46;
-    }
-
-    #install-app-btn {
-      background-color: #1a1a1c;
-      color: #a1a1aa;
-      border: 1px solid #27272a;
-      padding: 10px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      transition: all 0.2s;
-      margin-top: auto;
-      width: 100%;
-    }
-
-    #install-app-btn:hover {
-      background-color: #27272a;
-      color: #ffffff;
-      border-color: #3f3f46;
-    }
-
-    .notebooks-list {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      max-height: 160px;
-      overflow-y: auto;
-    }
-
-    .notebook-item {
+    .note-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 8px 10px;
-      background-color: #161618;
-      border: 1px solid #27272a;
-      border-radius: 4px;
+      padding: 12px 14px;
+      background-color: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
       cursor: pointer;
-      color: #a1a1aa;
-      font-size: 13px;
-      transition: all 0.2s;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s ease;
     }
 
-    .notebook-item:hover, .notebook-item.active {
-      background-color: #27272a;
+    .note-item:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+      border-color: var(--border-hover);
+      transform: translateX(4px);
+    }
+
+    .note-item.active {
+      background: rgba(79, 70, 229, 0.15);
       color: #ffffff;
-      border-color: #3f3f46;
+      border-color: var(--accent);
+      box-shadow: inset 0 0 8px rgba(79, 70, 229, 0.2);
     }
 
-    .notebook-item-title {
+    .note-item-title {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       flex: 1;
+      margin-right: 8px;
     }
 
-    #new-note-btn {
-      background-color: #0066cc;
-      color: #ffffff;
+    .delete-note-btn {
+      background: none;
       border: none;
-      padding: 8px 12px;
-      border-radius: 4px;
+      color: var(--text-muted);
       cursor: pointer;
-      font-size: 13px;
-      font-weight: 500;
-      margin-bottom: 12px;
-      transition: background-color 0.2s;
+      font-size: 16px;
+      padding: 4px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
     }
 
-    #new-note-btn:hover {
-      background-color: #0052a3;
+    .delete-note-btn:hover {
+      color: var(--danger);
+      background-color: rgba(239, 68, 68, 0.15);
     }
 
     .sidebar-action-btn {
-      background-color: #1a1a1a;
-      color: #888888;
-      border: 1px solid #333333;
-      padding: 8px 12px;
-      border-radius: 4px;
+      background-color: var(--bg-tertiary);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+      padding: 12px;
+      border-radius: 10px;
       cursor: pointer;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 500;
-      margin: 0;
       transition: all 0.2s;
       text-align: center;
+      font-family: var(--font-sans);
+    }
+
+    .sidebar-action-btn:hover {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      border-color: var(--border-hover);
     }
 
     .sidebar-footer {
       margin-top: auto;
-      padding-top: 16px;
-      border-top: 1px solid #1f1f23;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-color);
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
       flex-shrink: 0;
     }
 
-    .sidebar-action-btn:hover {
-      background-color: #262626;
-      color: #ffffff;
-    }
-
-    #preferences-btn {
-      margin-top: 16px;
-      margin-bottom: 25px;
-    }
-
-    .sidebar-action-btn.active {
-      background-color: #0066cc;
-      color: #ffffff;
-      border-color: #0055b3;
-    }
-
-    /* Modal de Preferências */
+    /* Modais */
     .modal-overlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      background-color: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(4px);
+      background-color: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       z-index: 2000;
       display: flex;
       align-items: center;
       justify-content: center;
       opacity: 0;
-      transition: opacity 0.25s ease;
+      transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       pointer-events: none;
     }
 
@@ -389,14 +447,17 @@
     }
 
     .modal-content {
-      background-color: #121214;
-      border: 1px solid #27272a;
-      border-radius: 12px;
+      background-color: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
       width: 90%;
-      max-width: 450px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+      max-width: 440px;
+      box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.5);
       transform: scale(0.95);
-      transition: transform 0.25s ease;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
     }
 
     .modal-overlay.active .modal-content {
@@ -407,41 +468,38 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 16px 20px;
-      border-bottom: 1px solid #1f1f23;
+      margin-bottom: 20px;
     }
 
     .modal-header h2 {
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 600;
-      color: #ffffff;
-      margin: 0;
+      color: var(--text-primary);
     }
 
     .close-btn {
       background: none;
       border: none;
-      color: #a1a1aa;
-      font-size: 24px;
+      color: var(--text-muted);
+      font-size: 28px;
       cursor: pointer;
-      padding: 0;
       line-height: 1;
       transition: color 0.2s;
     }
 
     .close-btn:hover {
-      color: #ffffff;
+      color: var(--text-primary);
     }
 
     .modal-body {
-      padding: 20px;
+      padding: 0;
     }
 
     .setting-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px 0;
+      padding: 8px 0;
     }
 
     .setting-info {
@@ -451,22 +509,22 @@
     }
 
     .setting-title {
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 500;
-      color: #ffffff;
+      color: var(--text-primary);
     }
 
     .setting-description {
-      font-size: 12px;
-      color: #71717a;
+      font-size: 13px;
+      color: var(--text-muted);
     }
 
-    /* Switch toggle style */
+    /* Switch toggle */
     .switch {
       position: relative;
       display: inline-block;
-      width: 44px;
-      height: 24px;
+      width: 46px;
+      height: 26px;
     }
 
     .switch input {
@@ -482,27 +540,27 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background-color: #27272a;
+      background-color: rgba(255, 255, 255, 0.1);
       transition: .3s;
-      border-radius: 24px;
-      border: 1px solid #3f3f46;
+      border-radius: 26px;
+      border: 1px solid var(--border-color);
     }
 
     .slider:before {
       position: absolute;
       content: "";
-      height: 16px;
-      width: 16px;
+      height: 18px;
+      width: 18px;
       left: 3px;
       bottom: 3px;
-      background-color: #a1a1aa;
+      background-color: var(--text-secondary);
       transition: .3s;
       border-radius: 50%;
     }
 
     input:checked + .slider {
-      background-color: #0066cc;
-      border-color: #0055b3;
+      background-color: var(--accent);
+      border-color: var(--accent);
     }
 
     input:checked + .slider:before {
@@ -510,71 +568,19 @@
       background-color: #ffffff;
     }
 
-    #search-input {
-      display: none;
-    }
-
-    .notes-list {
-      flex: 1;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      min-height: 0;
-    }
-
-    .note-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 12px;
-      background-color: #1a1a1a;
-      border: 1px solid #27272a;
-      border-radius: 4px;
-      cursor: pointer;
-      color: #a1a1aa;
-      font-size: 14px;
-      transition: all 0.2s;
-    }
-
-    .note-item:hover, .note-item.active {
-      background-color: #27272a;
-      color: #ffffff;
-      border-color: #3f3f46;
-    }
-
-    .note-item-title {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      flex: 1;
-      margin-right: 8px;
-    }
-
-    .delete-note-btn {
-      background: none;
-      border: none;
-      color: #71717a;
-      cursor: pointer;
-      font-size: 14px;
-      padding: 2px 6px;
-    }
-
-    .delete-note-btn:hover {
-      color: #ef4444;
-    }
-
     /* Containers de Visualização */
     .editor-container {
       width: 100%;
-      height: 100%;
+      height: calc(100vh - var(--header-height));
+      margin-top: var(--header-height);
       position: relative;
+      background-color: var(--bg-primary);
     }
 
     .view-pane {
       width: 100%;
       height: 100%;
-      padding: 55px 20px 20px 20px;
+      padding: 30px;
       font-size: var(--font-size);
       line-height: var(--line-height);
       overflow-y: auto;
@@ -591,71 +597,98 @@
       display: block;
     }
 
-    /* 1. Modo Leitura (Renderizado Bloqueado) */
+    /* Modo Leitura */
     #read-pane {
-      background-color: #000000;
+      background-color: var(--bg-primary);
       color: #e4e4e7;
       user-select: text;
     }
 
-    /* 2. Modo Edição Visual (WYSIWYG) */
+    /* Modo Edição Visual */
     #edit-visual-pane {
-      background-color: #000000;
+      background-color: var(--bg-primary);
       color: #e4e4e7;
     }
 
-    /* Estilização Interna do Markdown (Compartilhada) */
-    .markdown-body h1, .markdown-body h2, .markdown-body h3 { 
-      margin-top: 0.8em;
-      margin-bottom: 0.4em; 
-      color: #fff; 
-    }
-    .markdown-body h1 { font-size: 2em; border-bottom: 1px solid #27272a; padding-bottom: 0.3em; }
-    .markdown-body h2 { font-size: 1.5em; }
-    .markdown-body h3 { font-size: 1.2em; }
-    .markdown-body p { margin-bottom: 1em; }
-    .markdown-body code { background: #1f1f23; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
-    .markdown-body pre { background: #1f1f23; padding: 12px; border-radius: 6px; overflow-x: auto; margin-bottom: 1em; }
-    .markdown-body pre code { background: none; padding: 0; }
-    .markdown-body ul, .markdown-body ol { margin-left: 20px; margin-bottom: 1em; }
-    .markdown-body blockquote { border-left: 4px solid #3f3f46; padding-left: 12px; color: #a1a1aa; margin-bottom: 1em; }
-
     #edit-visual-pane:empty:before {
-      content: "# Nova Nota";
-      font-size: 2em;
-      font-weight: bold;
-      color: #4a4a4a;
-      display: block;
-      border-bottom: 1px solid #27272a;
-      padding-bottom: 0.3em;
-      margin-bottom: 0.4em;
-      margin-top: 0.8em;
+      content: "Comece a digitar sua nota...";
+      font-size: var(--font-size);
+      color: var(--text-muted);
+      position: absolute;
+      left: 30px;
+      top: 30px;
+      pointer-events: none;
     }
 
-    #edit-visual-pane:empty:after {
-      content: "Comece a digitar...";
-      font-size: 1em;
-      color: #4a4a4a;
-      display: block;
+    /* Markdown Body Styling */
+    .markdown-body {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .markdown-body h1, .markdown-body h2, .markdown-body h3 { 
+      margin-top: 1.4em;
+      margin-bottom: 0.6em; 
+      color: #ffffff; 
+      font-weight: 600;
+    }
+    .markdown-body h1 { 
+      font-size: 2.2em; 
+      border-bottom: 1px solid var(--border-color); 
+      padding-bottom: 0.4em; 
+      margin-bottom: 1em; 
+    }
+    .markdown-body h2 { font-size: 1.65em; }
+    .markdown-body h3 { font-size: 1.3em; }
+    .markdown-body p { margin-bottom: 1.2em; color: rgba(255, 255, 255, 0.9); }
+    .markdown-body code { 
+      background: rgba(255, 255, 255, 0.06); 
+      padding: 3px 6px; 
+      border-radius: 6px; 
+      font-family: var(--font-mono); 
+      font-size: 0.9em;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .markdown-body pre { 
+      background: var(--bg-tertiary); 
+      padding: 16px; 
+      border-radius: 12px; 
+      overflow-x: auto; 
+      margin-bottom: 1.4em; 
+      border: 1px solid var(--border-color);
+    }
+    .markdown-body pre code { background: none; padding: 0; border: none; }
+    .markdown-body ul, .markdown-body ol { margin-left: 24px; margin-bottom: 1.2em; color: rgba(255, 255, 255, 0.9); }
+    .markdown-body li { margin-bottom: 0.4em; }
+    .markdown-body blockquote { 
+      border-left: 4px solid var(--accent); 
+      padding-left: 16px; 
+      color: var(--text-secondary); 
+      margin-bottom: 1.4em; 
+      font-style: italic;
     }
 
     #read-pane:empty:before {
       content: "Nota vazia.";
-      color: #4a4a4a;
+      color: var(--text-muted);
     }
 
-    /* 3. Modo Código Markdown (Textarea Raw) */
+    /* Modo Código Raw */
     #raw-pane {
-      background-color: #000000;
-      color: #a1a1aa;
-      font-family: "Fira Code", monospace, monospace;
+      background-color: var(--bg-primary);
+      color: rgba(255, 255, 255, 0.85);
+      font-family: var(--font-mono);
+      font-size: var(--font-size);
       resize: none;
       white-space: pre-wrap;
       word-wrap: break-word;
+      border: none;
+      outline: none;
+      padding: 30px;
     }
 
     #raw-pane::placeholder {
-      color: #4a4a4a;
+      color: var(--text-muted);
     }
 
     @keyframes spin {
@@ -666,14 +699,17 @@
 </head>
 <body>
 
-  <!-- Botão Sidebar -->
-  <button id="menu-btn" class="action-btn">Notas</button>
-
-  <!-- Botões de Ação Superiores -->
-  <div class="top-actions">
-    <button id="edit-btn" class="action-btn">Editar</button>
-    <button id="save-btn" class="action-btn primary" style="display: none;">Salvar</button>
-  </div>
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <button id="menu-btn" class="action-btn">
+      <span style="font-size: 16px; vertical-align: middle;">☰</span> Notas
+    </button>
+    <div style="font-weight: 600; font-size: 16px; letter-spacing: -0.02em;"></div>
+    <div class="top-actions">
+      <button id="edit-btn" class="action-btn">Editar</button>
+      <button id="save-btn" class="action-btn primary" style="display: none;">Salvar</button>
+    </div>
+  </header>
 
   <!-- Botão Flutuante (FAB) Nova Nota -->
   <button id="bottom-new-note-btn" class="fab-new-note" title="Nova Nota">+</button>
@@ -683,9 +719,15 @@
 
   <!-- Sidebar Lateral -->
   <div id="sidebar">
-    <div class="sidebar-header" style="cursor: default; display: none;">
-      <span class="sidebar-title" id="active-notebook-title" style="display: none;"></span>
-      <span id="sync-indicator" style="display: none; font-size: 12px; margin-right: 8px; animation: spin 1.5s linear infinite; color: #a1a1aa; user-select: none;">🔄</span>
+    <div class="sidebar-brand">
+      <span class="sidebar-title" id="active-notebook-title">Minhas Notas</span>
+      <span id="sync-indicator" style="display: none; font-size: 12px; animation: spin 1.5s linear infinite; color: var(--accent); user-select: none;">🔄</span>
+    </div>
+
+    <!-- Barra de Pesquisa Premium -->
+    <div class="search-box-container">
+      <input type="text" id="search-notes-input" placeholder="Pesquisar notas..." autocomplete="off">
+      <span class="search-icon">🔍</span>
     </div>
 
     <div class="notes-list" id="notes-list"></div>
@@ -743,7 +785,17 @@
     <div id="edit-visual-pane" class="view-pane markdown-body" contenteditable="true" spellcheck="false"></div>
 
     <!-- Modo 3: Código Raw -->
-    <textarea id="raw-pane" class="view-pane" spellcheck="false" placeholder="# Nova Nota&#10;&#10;Comece a digitar..."></textarea>
+    <textarea id="raw-pane" class="view-pane" spellcheck="false" placeholder="Nova Nota&#10;&#10;Comece a digitar..."></textarea>
+
+    <!-- Toolbar de Formatação Rápida (Markdown Helper) -->
+    <div id="format-toolbar" class="format-toolbar">
+      <button class="format-btn" onclick="insertFormat('bold')" title="Negrito">B</button>
+      <button class="format-btn" onclick="insertFormat('italic')" title="Itálico">I</button>
+      <button class="format-btn" onclick="insertFormat('header')" title="Título">H</button>
+      <button class="format-btn" onclick="insertFormat('code')" title="Código">&lt;&gt;</button>
+      <button class="format-btn" onclick="insertFormat('quote')" title="Citação">“</button>
+      <button class="format-btn" onclick="insertFormat('list')" title="Lista">•</button>
+    </div>
   </div>
 
   <script>
@@ -778,6 +830,7 @@
 
     // Detecta se está rodando no Capacitor com o plugin Filesystem
     const isCapacitor = typeof Capacitor !== 'undefined' && Capacitor.Plugins && Capacitor.Plugins.Filesystem;
+    const fsDir = (typeof Capacitor !== 'undefined' && Capacitor.getPlatform() === 'android') ? 'EXTERNAL' : 'DOCUMENTS';
 
     // Gerenciador de Armazenamento Unificado (LocalStorage rápido + Filesystem em segundo plano)
     const NotebookStorage = {
@@ -804,7 +857,7 @@
           }
           return {
             path: resolved,
-            directory: 'DOCUMENTS'
+            directory: fsDir
           };
         }
       },
@@ -823,7 +876,7 @@
 
             await Capacitor.Plugins.Filesystem.mkdir({
               path: 'mkd-notes',
-              directory: 'DOCUMENTS',
+              directory: fsDir,
               recursive: true
             }).catch(() => {});
             
@@ -850,7 +903,7 @@
         try {
           const result = await Capacitor.Plugins.Filesystem.readdir({
             path: 'mkd-notes',
-            directory: 'DOCUMENTS'
+            directory: fsDir
           });
           const dirs = result.files.map(f => typeof f === 'string' ? f : f.name);
           const externalNotebookNames = Object.keys(this.notebookPaths);
@@ -898,7 +951,7 @@
       async createNotebookFS(name) {
         await Capacitor.Plugins.Filesystem.mkdir({
           path: `mkd-notes/${name}`,
-          directory: 'DOCUMENTS',
+          directory: fsDir,
           recursive: true
         });
       },
@@ -1130,7 +1183,17 @@
 
     function renderNotesList() {
       notesListContainer.innerHTML = '';
-      NotebookStorage.notes.forEach(note => {
+      const searchInput = document.getElementById('search-notes-input');
+      const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+      const filteredNotes = NotebookStorage.notes.filter(note => {
+        if (!query) return true;
+        const title = getNoteTitle(note.content).toLowerCase();
+        const content = note.content.toLowerCase();
+        return title.includes(query) || content.includes(query);
+      });
+
+      filteredNotes.forEach(note => {
         const item = document.createElement('div');
         item.className = `note-item ${note.id === currentNoteId ? 'active' : ''}`;
         
@@ -1161,6 +1224,14 @@
         notesListContainer.appendChild(item);
       });
     }
+
+    // Vincular input de busca
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInput = document.getElementById('search-notes-input');
+      if (searchInput) {
+        searchInput.addEventListener('input', renderNotesList);
+      }
+    });
 
 
 
@@ -1255,6 +1326,7 @@
       currentMode = mode;
       const note = NotebookStorage.notes.find(n => n.id === currentNoteId);
       const content = note ? note.content : '';
+      const formatToolbar = document.getElementById('format-toolbar');
 
       // Oculta todos
       readPane.classList.remove('active');
@@ -1267,6 +1339,7 @@
 
         editBtn.style.display = 'block';
         saveBtn.style.display = 'none';
+        if (formatToolbar) formatToolbar.classList.remove('visible');
 
       } else if (mode === 'visual') {
         editVisualPane.innerHTML = content ? marked.parse(content) : '';
@@ -1275,6 +1348,7 @@
         editBtn.style.display = 'none';
         saveBtn.style.display = 'block';
         editVisualPane.focus();
+        if (formatToolbar) formatToolbar.classList.add('visible');
 
       } else if (mode === 'raw') {
         rawPane.value = content;
@@ -1283,6 +1357,61 @@
         editBtn.style.display = 'none';
         saveBtn.style.display = 'block';
         rawPane.focus();
+        if (formatToolbar) formatToolbar.classList.add('visible');
+      }
+    }
+
+    // Inserção e formatação rápida (Markdown Helper)
+    function insertFormat(type) {
+      if (currentMode === 'visual') {
+        editVisualPane.focus();
+        if (type === 'bold') {
+          document.execCommand('bold', false);
+        } else if (type === 'italic') {
+          document.execCommand('italic', false);
+        } else if (type === 'header') {
+          document.execCommand('formatBlock', false, '<h3>');
+        } else if (type === 'quote') {
+          document.execCommand('formatBlock', false, '<blockquote>');
+        } else if (type === 'list') {
+          document.execCommand('insertUnorderedList', false);
+        } else if (type === 'code') {
+          const selection = window.getSelection();
+          if (!selection.isCollapsed) {
+            const range = selection.getRangeAt(0);
+            const code = document.createElement('code');
+            code.appendChild(range.extractContents());
+            range.insertNode(code);
+          }
+        }
+        editVisualPane.dispatchEvent(new Event('input'));
+      } else if (currentMode === 'raw') {
+        rawPane.focus();
+        const start = rawPane.selectionStart;
+        const end = rawPane.selectionEnd;
+        const text = rawPane.value;
+        const selectedText = text.substring(start, end);
+        let replacement = '';
+
+        if (type === 'bold') {
+          replacement = `**${selectedText}**`;
+        } else if (type === 'italic') {
+          replacement = `*${selectedText}*`;
+        } else if (type === 'header') {
+          replacement = `\n### ${selectedText}`;
+        } else if (type === 'quote') {
+          replacement = `\n> ${selectedText}`;
+        } else if (type === 'list') {
+          replacement = `\n- ${selectedText}`;
+        } else if (type === 'code') {
+          replacement = `\`${selectedText}\``;
+        }
+
+        rawPane.value = text.substring(0, start) + replacement + text.substring(end);
+        rawPane.selectionStart = start + replacement.length;
+        rawPane.selectionEnd = start + replacement.length;
+        
+        rawPane.dispatchEvent(new Event('input'));
       }
     }
 
