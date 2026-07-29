@@ -1307,8 +1307,43 @@
       }
     });
 
+    // Configura o Marked para converter quebras de linha simples (\n) em <br>
+    if (typeof marked.use === 'function') {
+      marked.use({ breaks: true, gfm: true });
+    } else if (typeof marked.setOptions === 'function') {
+      marked.setOptions({ breaks: true, gfm: true });
+    }
+
     // Inicialização do Turndown para conversão reversa de HTML para Markdown
     const turndownService = new TurndownService({ headingStyle: 'atx', codeBlockStyle: 'fenced' });
+
+    // Regra customizada para tratar <div> de forma limpa como quebra de linha simples
+    turndownService.addRule('div', {
+      filter: 'div',
+      replacement: function (content, node) {
+        // Se for um bloco de linha em branco gerado pelo contenteditable
+        if (node.innerHTML === '<br>' || node.innerHTML === '') {
+          return '\n';
+        }
+        return '\n' + content;
+      }
+    });
+
+    // Regra customizada para <p> para garantir espaçamento adequado sem acumular quebras desnecessárias
+    turndownService.addRule('p', {
+      filter: 'p',
+      replacement: function (content) {
+        return '\n\n' + content + '\n\n';
+      }
+    });
+
+    // Regra customizada para <br>
+    turndownService.addRule('br', {
+      filter: 'br',
+      replacement: function () {
+        return '\n';
+      }
+    });
 
     function getCleanMarkdownText(element) {
       let rawText = element.innerText || '';
@@ -1318,7 +1353,16 @@
 
     function getMarkdownFromHtml(element) {
       // Converte o HTML do painel visual de volta para Markdown usando Turndown
-      return turndownService.turndown(element.innerHTML);
+      let markdown = turndownService.turndown(element.innerHTML);
+      
+      // Limpeza geral para evitar o acúmulo e duplicação de quebras de linha
+      markdown = markdown.replace(/\r\n/g, '\n');
+      
+      // Remove espaços/quebras redundantes no início e fim de cada bloco/parágrafo
+      markdown = markdown.split('\n').map(line => line.trimEnd()).join('\n');
+      
+      // Limita a no máximo 1 linha em branco consecutiva (\n\n) no documento final
+      return markdown.replace(/\n{3,}/g, '\n\n').trim();
     }
 
     // Controle de Modos e Visibilidade
