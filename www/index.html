@@ -720,7 +720,7 @@
   <!-- Sidebar Lateral -->
   <div id="sidebar">
     <div class="sidebar-brand">
-      <span class="sidebar-title" id="active-notebook-title">Minhas Notas</span>
+      <span class="sidebar-title">Minhas Notas</span>
       <span id="sync-indicator" style="display: none; font-size: 12px; animation: spin 1.5s linear infinite; color: var(--accent); user-select: none;">🔄</span>
     </div>
 
@@ -825,47 +825,30 @@
     const overlay = document.getElementById('overlay');
     const newNoteBtn = document.getElementById('new-note-btn');
     const notesListContainer = document.getElementById('notes-list');
-    const activeNotebookTitle = document.getElementById('active-notebook-title');
     const installAppBtn = document.getElementById('install-app-btn');
 
     // Detecta se está rodando no Capacitor com o plugin Filesystem
     const isCapacitor = typeof Capacitor !== 'undefined' && Capacitor.Plugins && Capacitor.Plugins.Filesystem;
     const fsDir = (typeof Capacitor !== 'undefined' && Capacitor.getPlatform() === 'android') ? 'EXTERNAL' : 'DOCUMENTS';
 
-    // Gerenciador de Armazenamento Unificado (LocalStorage rápido + Filesystem em segundo plano)
-    const NotebookStorage = {
-      activeNotebook: 'Minhas Notas',
-      notebooks: ['Minhas Notas'],
+    // Gerenciador de Armazenamento de Notas (LocalStorage rápido + Filesystem em segundo plano)
+    const NoteStorage = {
       notes: [],
-      notebookPaths: JSON.parse(localStorage.getItem('notepad_notebook_paths')) || {},
 
-      resolvePath(extraPath = '', notebookName = null) {
-        const targetNotebook = notebookName || this.activeNotebook;
-        const info = this.notebookPaths[targetNotebook];
-        if (info && info.isExternal) {
-          let resolved = info.path;
-          if (extraPath) {
-            resolved = resolved.endsWith('/') ? resolved + extraPath : resolved + '/' + extraPath;
-          }
-          return {
-            path: resolved
-          };
-        } else {
-          let resolved = `mkd-notes/${targetNotebook}`;
-          if (extraPath) {
-            resolved += '/' + extraPath;
-          }
-          return {
-            path: resolved,
-            directory: fsDir
-          };
+      resolvePath(filename = '') {
+        let resolved = 'mkd-notes';
+        if (filename) {
+          resolved += '/' + filename;
         }
+        return {
+          path: resolved,
+          directory: fsDir
+        };
       },
 
       async init() {
         if (isCapacitor) {
           try {
-            // Solicita permissão de armazenamento ao sistema operacional
             const permStatus = await Capacitor.Plugins.Filesystem.checkPermissions();
             if (permStatus.publicStorage !== 'granted') {
               const reqResult = await Capacitor.Plugins.Filesystem.requestPermissions();
@@ -880,7 +863,8 @@
               recursive: true
             }).catch(() => {});
             
-            await this.loadNotebooksFS();
+            this.loadNotesLS();
+            await this.syncNotesFS();
           } catch (e) {
             console.error("Falha ao inicializar Filesystem, usando localStorage fallback.", e);
             this.initLocalStorage();
@@ -891,104 +875,35 @@
       },
 
       initLocalStorage() {
-        this.notebooks = JSON.parse(localStorage.getItem('notepad_notebooks')) || ['Minhas Notas'];
-        this.activeNotebook = localStorage.getItem('notepad_active_notebook') || 'Minhas Notas';
-        if (!this.notebooks.includes(this.activeNotebook)) {
-          this.activeNotebook = this.notebooks[0] || 'Minhas Notas';
-        }
         this.loadNotesLS();
       },
 
-      async loadNotebooksFS() {
-        try {
-          const result = await Capacitor.Plugins.Filesystem.readdir({
-            path: 'mkd-notes',
-            directory: fsDir
-          });
-          const dirs = result.files.map(f => typeof f === 'string' ? f : f.name);
-          const externalNotebookNames = Object.keys(this.notebookPaths);
-          const allNotebooks = Array.from(new Set([...dirs, ...externalNotebookNames]));
-
-          if (allNotebooks.length === 0) {
-            await this.createNotebookFS('Minhas Notas');
-            this.notebooks = ['Minhas Notas'];
-          } else {
-            this.notebooks = allNotebooks;
-          }
-          this.activeNotebook = localStorage.getItem('notepad_active_notebook') || this.notebooks[0];
-          if (!this.notebooks.includes(this.activeNotebook)) {
-            this.activeNotebook = this.notebooks[0];
-          }
-          // Inicializa instantaneamente com o cache local
-          this.loadNotesLS();
-          // Dispara a sincronização de arquivos em segundo plano
-          this.syncActiveNotebook();
-        } catch (e) {
-          console.error("Erro ao listar diretórios", e);
-          this.initLocalStorage();
-        }
-      },
-
-      async createNotebook(name) {
-        name = name.trim();
-        if (!name || this.notebooks.includes(name)) return false;
-        this.notebooks.push(name);
-        if (isCapacitor) {
-          try {
-            const isExternal = this.notebookPaths[name] && this.notebookPaths[name].isExternal;
-            if (!isExternal) {
-              await this.createNotebookFS(name);
-            }
-          } catch(e) {
-            console.error("Erro ao criar diretório do caderno", e);
-          }
-        } else {
-          localStorage.setItem('notepad_notebooks', JSON.stringify(this.notebooks));
-        }
-        return true;
-      },
-
-      async createNotebookFS(name) {
-        await Capacitor.Plugins.Filesystem.mkdir({
-          path: `mkd-notes/${name}`,
-          directory: fsDir,
-          recursive: true
-        });
-      },
-
-      async loadNotes() {
-        this.loadNotesLS(); // Carrega localStorage imediatamente (0ms)
-        if (isCapacitor) {
-          this.syncActiveNotebook(); // Sincroniza em segundo plano de forma não-bloqueante
-        }
-      },
-
       loadNotesLS() {
-        const key = `notepad_notes_${this.activeNotebook}`;
-        this.notes = JSON.parse(localStorage.getItem(key)) || [];
+        let saved = localStorage.getItem('notepad_notes');
+        if (!saved) {
+          saved = localStorage.getItem('notepad_notes_Minhas Notas');
+        }
+        this.notes = saved ? JSON.parse(saved) : [];
         if (this.notes.length === 0) {
           this.notes = [{
             id: Date.now().toString(),
-            content: `# ${this.activeNotebook}\nComece a digitar sua primeira nota aqui...`
+            content: '# Minhas Notas\nComece a digitar sua primeira nota aqui...'
           }];
           this.saveNotesLS();
         }
       },
 
-      async syncActiveNotebook() {
+      async syncNotesFS() {
         if (!isCapacitor) return;
         const syncIndicator = document.getElementById('sync-indicator');
         if (syncIndicator) syncIndicator.style.display = 'inline-block';
 
         try {
-          // Garante que a pasta existe
           await Capacitor.Plugins.Filesystem.mkdir(Object.assign({ recursive: true }, this.resolvePath())).catch(() => {});
 
-          // Lista arquivos no disco
           const result = await Capacitor.Plugins.Filesystem.readdir(this.resolvePath());
           const files = result.files.map(f => typeof f === 'string' ? f : f.name);
 
-          // Lê todos os arquivos .md da pasta
           const fsNotesMap = new Map();
           for (const file of files) {
             if (file.endsWith('.md')) {
@@ -1001,11 +916,9 @@
             }
           }
 
-          const lsKey = `notepad_notes_${this.activeNotebook}`;
-          let localNotes = JSON.parse(localStorage.getItem(lsKey)) || [];
+          let localNotes = this.notes;
           let hasChanges = false;
 
-          // 1. Sincroniza do Disco -> LocalStorage (O disco sobressai se houver alteração)
           fsNotesMap.forEach((fsContent, id) => {
             const localNote = localNotes.find(n => n.id === id);
             if (!localNote) {
@@ -1017,7 +930,6 @@
             }
           });
 
-          // 2. Sincroniza do LocalStorage -> Disco (Se nota local não existe no disco, grava)
           for (const localNote of localNotes) {
             if (!fsNotesMap.has(localNote.id)) {
               await this.saveNoteFS(localNote.id, localNote.content);
@@ -1028,13 +940,12 @@
             if (localNotes.length === 0) {
               localNotes = [{
                 id: Date.now().toString(),
-                content: `# ${this.activeNotebook}\nComece a digitar sua primeira nota aqui...`
+                content: '# Minhas Notas\nComece a digitar sua primeira nota aqui...'
               }];
               await this.saveNoteFS(localNotes[0].id, localNotes[0].content);
             }
             this.notes = localNotes.sort((a, b) => b.id.localeCompare(a.id));
             this.saveNotesLS();
-            // Atualiza interface se houver mudanças importadas
             loadCurrentNote();
           } else {
             this.notes = localNotes.sort((a, b) => b.id.localeCompare(a.id));
@@ -1043,7 +954,6 @@
           console.error("Erro ao rodar sincronização", e);
         } finally {
           if (syncIndicator) {
-            // Suaviza o sumiço do ícone giratório para evitar flicker
             setTimeout(() => {
               syncIndicator.style.display = 'none';
             }, 600);
@@ -1051,23 +961,14 @@
         }
       },
 
-      async saveNotes() {
-        if (!isCapacitor) {
-          this.saveNotesLS();
-        }
-      },
-
       saveNotesLS() {
-        const key = `notepad_notes_${this.activeNotebook}`;
-        localStorage.setItem(key, JSON.stringify(this.notes));
-        localStorage.setItem('notepad_active_notebook', this.activeNotebook);
+        localStorage.setItem('notepad_notes', JSON.stringify(this.notes));
       },
 
       async saveNoteFS(id, content) {
         if (!isCapacitor) return;
         try {
           await Capacitor.Plugins.Filesystem.writeFile(Object.assign({ data: content, encoding: 'utf8' }, this.resolvePath(`${id}.md`)));
-          localStorage.setItem('notepad_active_notebook', this.activeNotebook);
         } catch (e) {
           console.error("Erro ao salvar nota no Filesystem", e);
         }
@@ -1088,11 +989,6 @@
     let currentMode = 'read';
     let currentFontSize = parseFloat(localStorage.getItem('notepad_font_size')) || 18;
 
-    // Renderizar Cadernos (removido)
-    function renderNotebooksList() {
-      // No-op
-    }
-
     // Sidebar close
     overlay.addEventListener('click', closeSidebar);
 
@@ -1108,28 +1004,27 @@
 
     // Carregar Nota Atual
     function loadCurrentNote() {
-      const note = NotebookStorage.notes.find(n => n.id === currentNoteId);
+      const note = NoteStorage.notes.find(n => n.id === currentNoteId);
       if (note) {
         setMode('read');
         updateDocumentTitle(note.content);
         renderNotesList();
-      } else if (NotebookStorage.notes.length > 0) {
-        currentNoteId = NotebookStorage.notes[0].id;
+      } else if (NoteStorage.notes.length > 0) {
+        currentNoteId = NoteStorage.notes[0].id;
         loadCurrentNote();
       }
     }
 
     async function saveNotesToStorage() {
       // Salva no LocalStorage imediatamente para resposta rápida
-      NotebookStorage.saveNotesLS();
+      NoteStorage.saveNotesLS();
       localStorage.setItem('notepad_current_note_id', currentNoteId);
-      localStorage.setItem('notepad_current_note_id_' + NotebookStorage.activeNotebook, currentNoteId);
 
       // Envia a escrita do arquivo nativo em segundo plano (sem await/bloqueio)
       if (isCapacitor) {
-        const note = NotebookStorage.notes.find(n => n.id === currentNoteId);
+        const note = NoteStorage.notes.find(n => n.id === currentNoteId);
         if (note) {
-          NotebookStorage.saveNoteFS(note.id, note.content);
+          NoteStorage.saveNoteFS(note.id, note.content);
         }
       }
     }
@@ -1148,13 +1043,11 @@
       return clean || 'Nova Nota';
     }
 
-    async function getUniqueFilenameFS(notebook, desiredTitle, excludeId) {
+    async function getUniqueFilenameFS(desiredTitle, excludeId) {
       const baseName = sanitizeFilename(desiredTitle);
       let filename = `${baseName}.md`;
       if (!isCapacitor) {
-        // Fallback localstorage
-        const key = `notepad_notes_${notebook}`;
-        const localNotes = JSON.parse(localStorage.getItem(key)) || [];
+        const localNotes = NoteStorage.notes;
         let counter = 1;
         while (localNotes.some(n => n.id === filename.replace('.md', '') && n.id !== excludeId)) {
           counter++;
@@ -1164,7 +1057,7 @@
       }
       try {
         const result = await Capacitor.Plugins.Filesystem.readdir(
-          NotebookStorage.resolvePath('', notebook)
+          NoteStorage.resolvePath()
         );
         const files = result.files.map(f => typeof f === 'string' ? f : f.name);
         let counter = 1;
@@ -1186,7 +1079,7 @@
       const searchInput = document.getElementById('search-notes-input');
       const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
-      const filteredNotes = NotebookStorage.notes.filter(note => {
+      const filteredNotes = NoteStorage.notes.filter(note => {
         if (!query) return true;
         const title = getNoteTitle(note.content).toLowerCase();
         const content = note.content.toLowerCase();
@@ -1210,7 +1103,7 @@
         };
 
         item.appendChild(titleSpan);
-        if (NotebookStorage.notes.length > 1) {
+        if (NoteStorage.notes.length > 1) {
           item.appendChild(deleteBtn);
         }
 
@@ -1233,18 +1126,16 @@
       }
     });
 
-
-
     const handleNewNote = async () => {
       let desiredTitle = 'Nova Nota';
-      let uniqueFilename = await getUniqueFilenameFS(NotebookStorage.activeNotebook, desiredTitle, null);
+      let uniqueFilename = await getUniqueFilenameFS(desiredTitle, null);
       let newId = uniqueFilename.replace('.md', '');
 
       const newNote = {
         id: newId,
         content: ''
       };
-      NotebookStorage.notes.unshift(newNote);
+      NoteStorage.notes.unshift(newNote);
       currentNoteId = newNote.id;
       
       await saveNotesToStorage();
@@ -1263,8 +1154,8 @@
     }
 
     async function deleteNote(id) {
-      if (NotebookStorage.notes.length <= 1) return;
-      const note = NotebookStorage.notes.find(n => n.id === id);
+      if (NoteStorage.notes.length <= 1) return;
+      const note = NoteStorage.notes.find(n => n.id === id);
       const title = getNoteTitle(note ? note.content : '');
       
       noteIdToDelete = id;
@@ -1294,12 +1185,12 @@
     confirmDeleteBtn.addEventListener('click', async () => {
       if (noteIdToDelete) {
         const id = noteIdToDelete;
-        NotebookStorage.notes = NotebookStorage.notes.filter(n => n.id !== id);
+        NoteStorage.notes = NoteStorage.notes.filter(n => n.id !== id);
         if (isCapacitor) {
-          await NotebookStorage.deleteNoteFS(id);
+          await NoteStorage.deleteNoteFS(id);
         }
         if (currentNoteId === id) {
-          currentNoteId = NotebookStorage.notes[0].id;
+          currentNoteId = NoteStorage.notes[0].id;
         }
         saveNotesToStorage();
         loadCurrentNote();
@@ -1321,7 +1212,6 @@
     turndownService.addRule('div', {
       filter: 'div',
       replacement: function (content, node) {
-        // Se for um bloco de linha em branco gerado pelo contenteditable
         if (node.innerHTML === '<br>' || node.innerHTML === '') {
           return '\n';
         }
@@ -1352,27 +1242,19 @@
     }
 
     function getMarkdownFromHtml(element) {
-      // Converte o HTML do painel visual de volta para Markdown usando Turndown
       let markdown = turndownService.turndown(element.innerHTML);
-      
-      // Limpeza geral para evitar o acúmulo e duplicação de quebras de linha
       markdown = markdown.replace(/\r\n/g, '\n');
-      
-      // Remove espaços/quebras redundantes no início e fim de cada bloco/parágrafo
       markdown = markdown.split('\n').map(line => line.trimEnd()).join('\n');
-      
-      // Limita a no máximo 1 linha em branco consecutiva (\n\n) no documento final
       return markdown.replace(/\n{3,}/g, '\n\n').trim();
     }
 
     // Controle de Modos e Visibilidade
     function setMode(mode) {
       currentMode = mode;
-      const note = NotebookStorage.notes.find(n => n.id === currentNoteId);
+      const note = NoteStorage.notes.find(n => n.id === currentNoteId);
       const content = note ? note.content : '';
       const formatToolbar = document.getElementById('format-toolbar');
 
-      // Oculta todos
       readPane.classList.remove('active');
       editVisualPane.classList.remove('active');
       rawPane.classList.remove('active');
@@ -1493,13 +1375,13 @@
       
       if (prefersMarkdown) {
         if (currentMode === 'visual') {
-          const note = NotebookStorage.notes.find(n => n.id === currentNoteId);
+          const note = NoteStorage.notes.find(n => n.id === currentNoteId);
           if (note) note.content = getMarkdownFromHtml(editVisualPane);
           setMode('raw');
         }
       } else {
         if (currentMode === 'raw') {
-          const note = NotebookStorage.notes.find(n => n.id === currentNoteId);
+          const note = NoteStorage.notes.find(n => n.id === currentNoteId);
           if (note) note.content = rawPane.value;
           setMode('visual');
         }
@@ -1507,7 +1389,7 @@
     });
 
     saveBtn.addEventListener('click', async () => {
-      const note = NotebookStorage.notes.find(n => n.id === currentNoteId);
+      const note = NoteStorage.notes.find(n => n.id === currentNoteId);
       if (note) {
         if (currentMode === 'visual') {
           note.content = getMarkdownFromHtml(editVisualPane);
@@ -1515,23 +1397,16 @@
           note.content = rawPane.value;
         }
 
-        // Verifica se o título mudou para realizar a renomeação segura
         const newTitle = getNoteTitle(note.content);
-        const desiredFilename = await getUniqueFilenameFS(NotebookStorage.activeNotebook, newTitle, currentNoteId);
+        const desiredFilename = await getUniqueFilenameFS(newTitle, currentNoteId);
         const newId = desiredFilename.replace('.md', '');
 
         if (newId !== currentNoteId) {
           if (isCapacitor) {
-            // Deleta o arquivo físico antigo
-            await NotebookStorage.deleteNoteFS(currentNoteId);
+            await NoteStorage.deleteNoteFS(currentNoteId);
           }
-          // Remove no cache LS se necessário, ou atualiza id da lista
           note.id = newId;
-          
-          // Se for fallback do LocalStorage, também precisamos sincronizar a chave
-          const key = `notepad_notes_${NotebookStorage.activeNotebook}`;
-          localStorage.setItem(key, JSON.stringify(NotebookStorage.notes));
-
+          NoteStorage.saveNotesLS();
           currentNoteId = newId;
         }
 
@@ -1542,15 +1417,14 @@
       setMode('read');
     });
 
-    // Auto-save durante a digitação (otimizado sem renomear arquivos em tempo real para evitar lag)
+    // Auto-save durante a digitação
     editVisualPane.addEventListener('input', async () => {
-      const note = NotebookStorage.notes.find(n => n.id === currentNoteId);
+      const note = NoteStorage.notes.find(n => n.id === currentNoteId);
       if (note) {
         note.content = getMarkdownFromHtml(editVisualPane);
         await saveNotesToStorage();
         updateDocumentTitle(note.content);
         
-        // Atualiza dinamicamente o título na sidebar sem reconstruir toda a lista
         const activeItem = notesListContainer.querySelector('.note-item.active .note-item-title');
         if (activeItem) {
           activeItem.textContent = getNoteTitle(note.content);
@@ -1559,13 +1433,12 @@
     });
 
     rawPane.addEventListener('input', async () => {
-      const note = NotebookStorage.notes.find(n => n.id === currentNoteId);
+      const note = NoteStorage.notes.find(n => n.id === currentNoteId);
       if (note) {
         note.content = rawPane.value;
         await saveNotesToStorage();
         updateDocumentTitle(note.content);
         
-        // Atualiza dinamicamente o título na sidebar sem reconstruir toda a lista
         const activeItem = notesListContainer.querySelector('.note-item.active .note-item-title');
         if (activeItem) {
           activeItem.textContent = getNoteTitle(note.content);
@@ -1586,19 +1459,16 @@
 
     // Inicialização da aplicação unificada
     async function initApp() {
-      await NotebookStorage.init();
-      activeNotebookTitle.textContent = NotebookStorage.activeNotebook;
+      await NoteStorage.init();
       
-      currentNoteId = localStorage.getItem('notepad_current_note_id_' + NotebookStorage.activeNotebook) || 
-                      localStorage.getItem('notepad_current_note_id') || 
-                      (NotebookStorage.notes[0] ? NotebookStorage.notes[0].id : null);
+      currentNoteId = localStorage.getItem('notepad_current_note_id') || 
+                      (NoteStorage.notes[0] ? NoteStorage.notes[0].id : null);
       
-      if (!currentNoteId && NotebookStorage.notes.length > 0) {
-        currentNoteId = NotebookStorage.notes[0].id;
+      if (!currentNoteId && NoteStorage.notes.length > 0) {
+        currentNoteId = NoteStorage.notes[0].id;
       }
 
       loadCurrentNote();
-      renderNotebooksList();
       updateFontSize(currentFontSize);
     }
     initApp();
