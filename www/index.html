@@ -70,10 +70,10 @@
       left: 0;
       right: 0;
       height: var(--header-height);
-      background: rgba(10, 10, 12, 0.8);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border-color);
+      background: transparent;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      border-bottom: none;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -288,10 +288,30 @@
       transform: scale(1.1);
     }
 
+    /* Estende a capa até o topo da tela no modo Leitura e Edição Visual */
+    #read-pane .note-cover-box,
+    #edit-visual-pane .note-cover-box {
+      margin-top: -70px;
+      height: 250px;
+    }
+    #read-pane .note-cover-remove-btn,
+    #edit-visual-pane .note-cover-remove-btn {
+      top: 82px;
+    }
+
     #raw-pane-wrapper {
       background-color: var(--bg-primary);
-      padding: 8px 30px 30px 30px;
+      padding: 0 30px 30px 30px;
       overflow-y: auto;
+    }
+
+    #raw-pane-wrapper #raw-cover-box {
+      margin-bottom: 16px !important;
+      height: 180px !important;
+    }
+
+    #raw-pane-wrapper.no-cover #raw-pane {
+      margin-top: 70px;
     }
 
     #raw-pane-wrapper #raw-pane {
@@ -310,7 +330,9 @@
       border: none;
       outline: none;
       padding: 0;
-      min-height: calc(100vh - var(--header-height) - 60px);
+      height: auto;
+      min-height: 200px;
+      overflow-y: hidden;
     }
 
     /* Dashboard UI */
@@ -1410,12 +1432,20 @@
       const mdCoverMatch = content.match(/^\s*!\[(?:capa|cover)\]\((.*?)\)\s*\n?/i);
       if (mdCoverMatch) {
         cover = mdCoverMatch[1];
-        content = content.replace(/^\s*!\[(?:capa|cover)\]\((.*?)\)\s*\n?/i, '');
       }
+
+      if (!cover) {
+        const anyCoverMatch = content.match(/!\[(?:capa|cover)\]\((.*?)\)/i);
+        if (anyCoverMatch) {
+          cover = anyCoverMatch[1];
+        }
+      }
+
+      content = content.replace(/!\[(?:capa|cover)\]\((.*?)\)\s*\n?/gi, '');
 
       if (cover) {
         const escapedCover = cover.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-        const mdImageRegex = new RegExp(`^\\s*!\\[.*?\\]\\(${escapedCover}\\)\\s*\\n?`, 'g');
+        const mdImageRegex = new RegExp(`\\s*!\\[.*?\\]\\(${escapedCover}\\)\\s*\\n?`, 'g');
         content = content.replace(mdImageRegex, '');
       }
 
@@ -2081,7 +2111,6 @@
       if (!coverUrl) return '';
       return `<div class="note-cover-box" contenteditable="false">
         <img src="${coverUrl}" alt="Capa da Nota">
-        <button class="note-cover-remove-btn" onclick="removeNoteCover(event)" title="Remover Capa">✕</button>
       </div>`;
     }
 
@@ -2135,11 +2164,19 @@
       } else if (mode === 'raw') {
         if (rawCoverBox) {
           if (cover) {
-            rawCoverBox.innerHTML = `<img src="${cover}" alt="Capa da Nota"><button class="note-cover-remove-btn" onclick="removeNoteCover(event)" title="Remover Capa">✕</button>`;
+            rawCoverBox.innerHTML = `<img src="${cover}" alt="Capa da Nota">`;
             rawCoverBox.style.display = 'block';
+            if (rawPaneWrapper) {
+              rawPaneWrapper.classList.add('has-cover');
+              rawPaneWrapper.classList.remove('no-cover');
+            }
           } else {
             rawCoverBox.innerHTML = '';
             rawCoverBox.style.display = 'none';
+            if (rawPaneWrapper) {
+              rawPaneWrapper.classList.add('no-cover');
+              rawPaneWrapper.classList.remove('has-cover');
+            }
           }
         }
         rawPane.value = content;
@@ -2149,6 +2186,8 @@
         saveBtn.style.display = 'block';
         rawPane.focus();
         if (formatToolbar) formatToolbar.classList.add('visible');
+        
+        setTimeout(autoResizeRawPane, 50);
       }
 
       updateNoteMenuState(note);
@@ -2468,7 +2507,17 @@
           activeItem.textContent = getNoteDisplayTitle(note);
         }
       }
+      autoResizeRawPane();
     });
+
+    function autoResizeRawPane() {
+      if (rawPane) {
+        rawPane.style.height = 'auto';
+        rawPane.style.height = rawPane.scrollHeight + 'px';
+      }
+    }
+
+    window.addEventListener('resize', autoResizeRawPane);
 
     function updateDocumentTitle(title) {
       document.title = title || "Bloco de Notas";
