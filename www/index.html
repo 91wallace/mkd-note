@@ -52,14 +52,14 @@
       outline: none;
     }
 
-    body {
+    html, body {
       background-color: var(--bg-primary);
       color: var(--text-primary);
       font-family: var(--font-sans);
-      height: 100vh;
-      width: 100vw;
+      height: 100dvh;
+      width: 100%;
       overflow: hidden;
-      touch-action: none;
+      touch-action: auto;
       position: relative;
     }
 
@@ -70,15 +70,28 @@
       left: 0;
       right: 0;
       height: var(--header-height);
-      background: transparent;
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
-      border-bottom: none;
+      /* O fundo padrão do cabeçalho é o degradê (usado quando há capa) */
+      background: linear-gradient(to bottom, rgba(10, 10, 12, 0.85) 0%, rgba(10, 10, 12, 0) 100%) !important;
+      border-bottom: none !important;
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 0 16px;
       z-index: 100;
+    }
+
+    /* Camada preta sólida que entra com transição de opacidade no scroll */
+    .app-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--bg-primary);
+      z-index: -1;
+      opacity: var(--header-opacity, 0);
+      pointer-events: none;
     }
 
     /* Elementos Flutuantes originais reajustados para layout fixo */
@@ -242,15 +255,7 @@
     }
 
     .note-cover-box::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 70px;
-      background: linear-gradient(to bottom, rgba(10, 10, 12, 0.7) 0%, rgba(10, 10, 12, 0) 100%);
-      pointer-events: none;
-      z-index: 1;
+      display: none;
     }
 
     .note-cover-box img {
@@ -288,30 +293,23 @@
       transform: scale(1.1);
     }
 
-    /* Estende a capa até o topo da tela no modo Leitura e Edição Visual */
-    #read-pane .note-cover-box,
-    #edit-visual-pane .note-cover-box {
+    /* Estende a capa até o topo da tela no modo Leitura, Edição Visual e Raw */
+    #read-pane-wrapper .note-cover-box,
+    #edit-visual-wrapper .note-cover-box,
+    #raw-pane-wrapper .note-cover-box {
       margin-top: -70px;
-      height: 250px;
+      height: 200px;
     }
-    #read-pane .note-cover-remove-btn,
-    #edit-visual-pane .note-cover-remove-btn {
+    #read-pane-wrapper .note-cover-remove-btn,
+    #edit-visual-wrapper .note-cover-remove-btn,
+    #raw-pane-wrapper .note-cover-remove-btn {
       top: 82px;
     }
 
     #raw-pane-wrapper {
       background-color: var(--bg-primary);
-      padding: 0 30px 30px 30px;
+      padding: 70px 30px 80px 30px;
       overflow-y: auto;
-    }
-
-    #raw-pane-wrapper #raw-cover-box {
-      margin-bottom: 16px !important;
-      height: 180px !important;
-    }
-
-    #raw-pane-wrapper.no-cover #raw-pane {
-      margin-top: 70px;
     }
 
     #raw-pane-wrapper #raw-pane {
@@ -338,10 +336,10 @@
     /* Dashboard UI */
     .dashboard-pane {
       width: 100%;
-      height: calc(100vh - var(--header-height));
-      margin-top: var(--header-height);
+      height: 100%;
+      margin-top: 0;
       background-color: var(--bg-primary);
-      padding: 16px 24px 60px 24px;
+      padding: 30px 24px 80px 24px;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       touch-action: pan-y;
@@ -638,11 +636,12 @@
       display: flex;
       flex-direction: column;
       padding: 24px 20px calc(24px + env(safe-area-inset-bottom)) 20px;
-      box-shadow: 15px 0 40px rgba(0, 0, 0, 0.8);
+      box-shadow: none;
     }
 
     #sidebar.open {
       left: 0;
+      box-shadow: 15px 0 40px rgba(0, 0, 0, 0.8);
     }
 
     .sidebar-brand {
@@ -694,53 +693,63 @@
       pointer-events: none;
     }
 
-    /* Toolbar de Formatação Rápida */
+    /* Toolbar de Formatação Rápida (Estilo Notion) */
     .format-toolbar {
       position: absolute;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%) translateY(20px);
-      background: rgba(18, 18, 22, 0.85);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--border-color);
-      border-radius: 14px;
-      padding: 6px 12px;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      height: 44px;
+      background: var(--bg-primary);
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      border-bottom: none;
+      border-left: none;
+      border-right: none;
+      border-radius: 0;
+      padding: 0 16px;
       display: flex;
-      gap: 8px;
-      z-index: 10;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+      justify-content: flex-start;
+      align-items: center;
+      gap: 16px;
+      z-index: 90;
+      box-shadow: none;
       opacity: 0;
       pointer-events: none;
-      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transform: translateY(100%);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow-x: auto;
+      scrollbar-width: none; /* Firefox */
+    }
+
+    .format-toolbar::-webkit-scrollbar {
+      display: none; /* Safari/Chrome */
     }
 
     .format-toolbar.visible {
       opacity: 1;
       pointer-events: auto;
-      transform: translateX(-50%) translateY(0);
+      transform: translateY(0);
     }
 
     .format-btn {
       background: transparent;
       border: none;
-      color: var(--text-secondary);
-      font-size: 14px;
-      font-family: var(--font-sans);
-      font-weight: 600;
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
+      color: #9b9b9f;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.2s;
+      transition: all 0.15s;
+      flex-shrink: 0;
     }
 
-    .format-btn:hover {
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--text-primary);
+    .format-btn:hover, .format-btn:active {
+      background: rgba(255, 255, 255, 0.06);
+      color: #ffffff;
     }
 
     #overlay {
@@ -749,9 +758,7 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
+      background: rgba(0, 0, 0, 0.45);
       z-index: 150;
       opacity: 0;
       visibility: hidden;
@@ -879,7 +886,7 @@
       top: 0;
       left: 0;
       width: 100vw;
-      height: 100vh;
+      height: 100dvh;
       background-color: rgba(0, 0, 0, 0.75);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
@@ -976,6 +983,7 @@
       display: inline-block;
       width: 46px;
       height: 26px;
+      flex-shrink: 0;
     }
 
     .switch input {
@@ -1003,7 +1011,7 @@
       height: 18px;
       width: 18px;
       left: 3px;
-      bottom: 3px;
+      top: 3px;
       background-color: var(--text-secondary);
       transition: .3s;
       border-radius: 50%;
@@ -1029,6 +1037,35 @@
       height: 100%;
       display: flex;
       align-items: center;
+      overflow: hidden;
+    }
+
+    .note-title-display-container {
+      display: none;
+      width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      align-items: center;
+      position: relative;
+    }
+    .note-title-display-text {
+      display: inline-block;
+      white-space: nowrap;
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+    }
+    .animate-marquee {
+      animation: titleMarquee 12s linear 2;
+    }
+    @keyframes titleMarquee {
+      0%, 33.3% {
+        transform: translateX(0);
+      }
+      66.6%, 100% {
+        transform: translateX(var(--scroll-dist, 0));
+      }
     }
 
     .note-title-input {
@@ -1036,8 +1073,8 @@
       border: none;
       background: transparent;
       color: var(--text-primary);
-      font-size: 16px;
-      font-weight: 400;
+      font-size: 24px;
+      font-weight: 600;
       font-family: var(--font-sans);
       outline: none;
       padding: 0;
@@ -1065,7 +1102,7 @@
     /* Containers de Visualização */
     .editor-container {
       width: 100%;
-      height: 100vh;
+      height: 100%;
       margin-top: 0;
       position: relative;
       background-color: var(--bg-primary);
@@ -1076,7 +1113,7 @@
     .view-pane {
       width: 100%;
       height: 100%;
-      padding: 70px 30px 30px 30px;
+      padding: 70px 30px 80px 30px;
       font-size: var(--font-size);
       line-height: var(--line-height);
       overflow-y: auto;
@@ -1096,12 +1133,14 @@
       background-color: var(--bg-primary);
       color: #e4e4e7;
       user-select: text;
+      overflow: hidden;
     }
 
     /* Modo Edição Visual */
     #edit-visual-pane {
       background-color: var(--bg-primary);
       color: #e4e4e7;
+      overflow: hidden;
     }
 
     #edit-visual-pane[data-placeholder]:not(.has-content)::before {
@@ -1132,7 +1171,15 @@
     }
     .markdown-body h2 { font-size: 1.65em; }
     .markdown-body h3 { font-size: 1.3em; }
-    .markdown-body p { margin-bottom: 1.2em; color: rgba(255, 255, 255, 0.9); }
+    .markdown-body p, 
+    #edit-visual-pane div, 
+    #edit-visual-pane p { 
+      margin-top: 0;
+      margin-bottom: 0; 
+      padding-top: 0;
+      padding-bottom: 0;
+      color: rgba(255, 255, 255, 0.9); 
+    }
     .markdown-body code { 
       background: rgba(255, 255, 255, 0.06); 
       padding: 3px 6px; 
@@ -1192,6 +1239,16 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+    @keyframes slideUp {
+      from {
+        transform: translate(-50%, 30px);
+        opacity: 0;
+      }
+      to {
+        transform: translate(-50%, 0);
+        opacity: 1;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1202,6 +1259,9 @@
       <span style="font-size: 16px; vertical-align: middle;">☰</span>
     </button>
     <div class="header-title-container" style="display: none;">
+      <div id="note-title-display-container" class="note-title-display-container">
+        <span id="note-title-display-text" class="note-title-display-text"></span>
+      </div>
       <input type="text" id="note-title-input" class="note-title-input" placeholder="Título">
     </div>
     <div class="top-actions">
@@ -1265,10 +1325,9 @@
     <div class="modal-content">
       <div class="modal-header">
         <h2>Preferências</h2>
-        <button id="close-preferences-btn" class="close-btn">&times;</button>
       </div>
       <div class="modal-body">
-        <div class="setting-item">
+        <div class="setting-item" style="align-items: center; justify-content: space-between;">
           <div class="setting-info">
             <span class="setting-title">Markdown Nativo</span>
             <span class="setting-description">Abre novas notas diretamente em formato Markdown</span>
@@ -1281,21 +1340,81 @@
 
         <div class="setting-item" style="align-items: center; justify-content: space-between;">
           <div class="setting-info">
+            <span class="setting-title">Edição com 2 Cliques</span>
+            <span class="setting-description">Dê dois cliques rápidos no texto para editar</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="pref-double-click-checkbox">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="setting-item" style="align-items: center; justify-content: space-between;">
+          <div class="setting-info">
             <span class="setting-title">Ao iniciar</span>
             <span class="setting-description">Escolha a tela exibida ao abrir o app</span>
           </div>
-          <select id="pref-startup-select" class="action-btn" style="padding: 8px 12px; font-size: 14px; font-weight: 500; border-radius: 8px; cursor: pointer; background: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-primary); outline: none;">
-            <option value="last">Continuar de onde parei</option>
-            <option value="dashboard">Iniciar em Dashboard</option>
-          </select>
+          <button id="pref-startup-btn" class="action-btn" style="padding: 8px 16px; font-size: 14px; font-weight: 500; border-radius: 8px;">Ajustar</button>
         </div>
 
-        <div class="setting-item" id="install-app-setting" style="display: none; align-items: center; justify-content: space-between;">
+        <div class="setting-item" style="align-items: center; justify-content: space-between;">
           <div class="setting-info">
-            <span class="setting-title">Instalar Aplicativo</span>
-            <span class="setting-description">Adicione o bloco de notas à sua tela inicial</span>
+            <span class="setting-title">Espaçamento de Linhas</span>
+            <span class="setting-description">Ajuste o espaçamento vertical entre as linhas de texto</span>
           </div>
-          <button id="install-app-btn" class="action-btn primary" style="padding: 8px 16px; font-size: 14px; font-weight: 500; border-radius: 8px;">Instalar</button>
+          <button id="pref-line-height-btn" class="action-btn" style="padding: 8px 16px; font-size: 14px; font-weight: 500; border-radius: 8px;">Ajustar</button>
+        </div>
+
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px;">
+        <button id="cancel-preferences-btn" class="action-btn">Cancelar</button>
+        <button id="apply-preferences-btn" class="action-btn primary">Aplicar</button>
+      </div>
+    </div>
+
+    <!-- Barra Flutuante de Instalação PWA (Aparece apenas quando Preferências está aberta) -->
+    <div id="pwa-install-banner" style="display: none; position: absolute; bottom: calc(48px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); background: rgba(22, 22, 31, 0.95); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--border-color); border-radius: 16px; padding: 14px 20px; z-index: 500; width: calc(100% - 32px); max-width: 420px; box-shadow: 0 12px 32px rgba(0,0,0,0.6); align-items: center; justify-content: space-between; gap: 16px; animation: slideUp 0.3s ease-out;">
+      <div style="flex: 1;">
+        <div style="font-weight: 600; font-size: 14px; color: var(--text-primary);">Instalar Bloco de Notas</div>
+        <div style="font-size: 12px; color: var(--text-muted); margin-top: 1px;">Use offline e acesse rápido.</div>
+      </div>
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <button id="pwa-install-btn" class="action-btn primary" style="padding: 6px 14px; font-size: 13px; border-radius: 8px;">Instalar</button>
+        <button id="pwa-dismiss-btn" style="background: none; border: none; color: var(--text-muted); font-size: 24px; cursor: pointer; line-height: 1; padding: 0 4px; transition: color 0.2s;" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--text-muted)'">&times;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal do Comportamento Inicial (Ao Iniciar) -->
+  <div id="startup-behavior-modal" class="modal-overlay" style="display: none; z-index: 2100;">
+    <div class="modal-content" style="max-width: 400px;">
+      <div class="modal-header">
+        <h2>Comportamento ao Iniciar</h2>
+        <button id="close-startup-modal-btn" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: #a1a1aa; font-size: 14px; margin-bottom: 20px; line-height: 1.5;">Escolha a tela exibida ao abrir o aplicativo:</p>
+        
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+          <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; color: var(--text-primary); font-size: 14px; padding: 12px 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 12px; transition: border-color 0.2s;">
+            <input type="radio" name="startup-option" value="last" style="accent-color: var(--accent); cursor: pointer;">
+            <div>
+              <div style="font-weight: 500;">Continuar de onde parei</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Abre a última nota ativa automaticamente</div>
+            </div>
+          </label>
+          <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; color: var(--text-primary); font-size: 14px; padding: 12px 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 12px; transition: border-color 0.2s;">
+            <input type="radio" name="startup-option" value="dashboard" style="accent-color: var(--accent); cursor: pointer;">
+            <div>
+              <div style="font-weight: 500;">Iniciar em Dashboard</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Abre na tela principal mostrando notas recentes</div>
+            </div>
+          </label>
+        </div>
+        
+        <div style="display: flex; justify-content: flex-end; gap: 12px;">
+          <button id="cancel-startup-btn" class="action-btn">Cancelar</button>
+          <button id="confirm-startup-btn" class="action-btn primary" style="padding: 8px 16px; font-size: 14px; font-weight: 500; border-radius: 8px;">Confirmar</button>
         </div>
       </div>
     </div>
@@ -1318,30 +1437,64 @@
     </div>
   </div>
 
+  <!-- Controle Flutuante de Espaçamento de Linhas -->
+  <div id="line-height-control-card" style="display: none; position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: rgba(22, 22, 31, 0.95); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px 24px; z-index: 300; width: calc(100% - 32px); max-width: 400px; box-shadow: 0 12px 32px rgba(0,0,0,0.6); flex-direction: column; gap: 12px; transition: all 0.3s ease;">
+    <div style="display: flex; justify-content: space-between; align-items: center; user-select: none;">
+      <span style="font-weight: 600; font-size: 15px; color: var(--text-primary);">Espaçamento de Linhas</span>
+      <span id="line-height-value-preview" style="font-weight: 500; font-size: 14px; color: var(--accent);">1.6</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; user-select: none;">
+      <span style="font-size: 12px; color: var(--text-muted);">A</span>
+      <input type="range" id="line-height-slider" min="0.7" max="2.5" step="0.1" value="1.6" style="flex: 1; accent-color: var(--accent); cursor: pointer;">
+      <span style="font-size: 16px; color: var(--text-muted);">A</span>
+    </div>
+    <div style="display: flex; justify-content: flex-end; margin-top: 4px;">
+      <button id="confirm-line-height-btn" class="action-btn primary" style="padding: 6px 16px; font-size: 14px; font-weight: 500; border-radius: 8px;">Confirmar</button>
+    </div>
+  </div>
+
   <!-- Área de Conteúdo (Editor) -->
   <div class="editor-container">
-    <div class="editor-panes-wrapper" style="position: relative; flex: 1; width: 100%; min-height: 0;">
+    <div class="editor-panes-wrapper" style="position: relative; flex: 1; width: 100%; height: 100%; min-height: 0; overflow: hidden;">
       <!-- Modo 1: Leitura Bloqueada -->
-      <div id="read-pane" class="view-pane markdown-body active"></div>
+      <div id="read-pane-wrapper" class="view-pane">
+        <div id="read-cover-box" class="note-cover-box" style="display: none;"></div>
+        <div id="read-pane" class="markdown-body"></div>
+      </div>
 
       <!-- Modo 2: Edição Visual -->
-      <div id="edit-visual-pane" class="view-pane markdown-body" contenteditable="true" spellcheck="false" data-placeholder="Comece a digitar sua nota..."></div >
+      <div id="edit-visual-wrapper" class="view-pane">
+        <div id="edit-visual-cover-box" class="note-cover-box" style="display: none;"></div>
+        <div id="edit-visual-pane" class="markdown-body" contenteditable="true" spellcheck="false" data-placeholder="Comece a digitar sua nota..."></div>
+      </div>
 
       <!-- Modo 3: Código Raw -->
       <div id="raw-pane-wrapper" class="view-pane">
-        <div id="raw-cover-box" class="note-cover-box markdown-body" style="display: none;"></div>
+        <div id="raw-cover-box" class="note-cover-box" style="display: none;"></div>
         <textarea id="raw-pane" spellcheck="false" placeholder="Comece a digitar..."></textarea>
       </div>
     </div>
 
-    <!-- Toolbar de Formatação Rápida (Markdown Helper) -->
+    <!-- Toolbar de Formatação Rápida (Markdown Helper - Estilo Notion) -->
     <div id="format-toolbar" class="format-toolbar">
-      <button class="format-btn" onclick="insertFormat('bold')" title="Negrito">B</button>
-      <button class="format-btn" onclick="insertFormat('italic')" title="Itálico">I</button>
-      <button class="format-btn" onclick="insertFormat('header')" title="Título">H</button>
-      <button class="format-btn" onclick="insertFormat('code')" title="Código">&lt;&gt;</button>
-      <button class="format-btn" onclick="insertFormat('quote')" title="Citação">“</button>
-      <button class="format-btn" onclick="insertFormat('list')" title="Lista">•</button>
+      <button class="format-btn" onclick="insertFormat('bold')" title="Negrito">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 12a4 4 0 0 0 0-8H6v8"/><path d="M15 20a4 4 0 0 0 0-8H6v8Z"/></svg>
+      </button>
+      <button class="format-btn" onclick="insertFormat('italic')" title="Itálico">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" x2="10" y1="4" y2="4"/><line x1="14" x2="5" y1="20" y2="20"/><line x1="15" x2="9" y1="4" y2="20"/></svg>
+      </button>
+      <button class="format-btn" onclick="insertFormat('header')" title="Título">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="4" y1="12" y2="20"/><line x1="4" x2="4" y1="4" y2="12"/><line x1="20" x2="20" y1="12" y2="20"/><line x1="20" x2="20" y1="4" y2="12"/><line x1="4" x2="20" y1="12" y2="12"/></svg>
+      </button>
+      <button class="format-btn" onclick="insertFormat('code')" title="Código">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      </button>
+      <button class="format-btn" onclick="insertFormat('quote')" title="Citação">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3a4 4 0 0 0-4 4v3a3 3 0 0 0 3 3h3a1 1 0 0 0 1-1V7a4 4 0 0 0-4-4Z"/><path d="M6 3a4 4 0 0 0-4 4v3a3 3 0 0 0 3 3h3a1 1 0 0 0 1-1V7a4 4 0 0 0-4-4Z"/></svg>
+      </button>
+      <button class="format-btn" onclick="insertFormat('list')" title="Lista">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
+      </button>
     </div>
   </div>
 
@@ -1369,20 +1522,25 @@
         </div>
       </section>
 
-    </div>
-  </div>
-
   <script>
+    const readPaneWrapper = document.getElementById('read-pane-wrapper');
+    const readCoverBox = document.getElementById('read-cover-box');
+    const editVisualWrapper = document.getElementById('edit-visual-wrapper');
+    const editVisualCoverBox = document.getElementById('edit-visual-cover-box');
     const readPane = document.getElementById('read-pane');
     const editVisualPane = document.getElementById('edit-visual-pane');
     const rawPane = document.getElementById('raw-pane');
     const rawPaneWrapper = document.getElementById('raw-pane-wrapper');
     const rawCoverBox = document.getElementById('raw-cover-box');
+    const editorPanesWrapper = document.querySelector('.editor-panes-wrapper');
 
     const preferencesBtn = document.getElementById('preferences-btn');
     const preferencesModal = document.getElementById('preferences-modal');
-    const closePreferencesBtn = document.getElementById('close-preferences-btn');
+    const prefStartupBtn = document.getElementById('pref-startup-btn');
     const prefMarkdownCheckbox = document.getElementById('pref-markdown-checkbox');
+    const prefDoubleClickCheckbox = document.getElementById('pref-double-click-checkbox');
+
+    let doubleClickEdit = localStorage.getItem('notepad_double_click_edit') === 'true';
 
     const deleteConfirmModal = document.getElementById('delete-confirm-modal');
     const closeDeleteModalBtn = document.getElementById('close-delete-modal-btn');
@@ -1401,8 +1559,9 @@
     const overlay = document.getElementById('overlay');
     const newNoteBtn = document.getElementById('new-note-btn');
     const notesListContainer = document.getElementById('notes-list');
-    const installAppBtn = document.getElementById('install-app-btn');
-    const installAppSetting = document.getElementById('install-app-setting');
+    const pwaInstallBanner = document.getElementById('pwa-install-banner');
+    const pwaInstallBtn = document.getElementById('pwa-install-btn');
+    const pwaDismissBtn = document.getElementById('pwa-dismiss-btn');
 
     // Menu da Nota (3 Pontinhos) & Capa
     const noteMenuBtn = document.getElementById('note-menu-btn');
@@ -1684,7 +1843,10 @@
       const editorContainer = document.querySelector('.editor-container');
       const dashboardPane = document.getElementById('dashboard-pane');
       const titleContainer = document.querySelector('.header-title-container');
+      const header = document.querySelector('.app-header');
 
+      if (header) header.style.display = 'none';
+      updateHeaderBackground();
       if (editorContainer) editorContainer.style.display = 'none';
       if (dashboardPane) {
         renderDashboard();
@@ -1705,7 +1867,9 @@
       const editorContainer = document.querySelector('.editor-container');
       const dashboardPane = document.getElementById('dashboard-pane');
       const titleContainer = document.querySelector('.header-title-container');
+      const header = document.querySelector('.app-header');
 
+      if (header) header.style.display = 'flex';
       if (dashboardPane) dashboardPane.style.display = 'none';
       if (editorContainer) editorContainer.style.display = 'block';
       if (titleContainer) titleContainer.style.display = 'flex';
@@ -2124,6 +2288,46 @@
       }
     }
 
+    function updateHeaderTitleDisplay(note) {
+      const titleInput = document.getElementById('note-title-input');
+      const titleDisplayContainer = document.getElementById('note-title-display-container');
+      const titleDisplayText = document.getElementById('note-title-display-text');
+      if (!titleInput || !titleDisplayContainer || !titleDisplayText) return;
+
+      const title = getNoteDisplayTitle(note);
+
+      // Atualiza o valor no input de edição
+      const isTimestamp = note ? /^\d{13}$/.test(note.id) : false;
+      titleInput.value = isTimestamp ? '' : (note ? note.id : '');
+
+      // Atualiza o texto na visualização estática
+      titleDisplayText.textContent = title || 'Sem Título';
+
+      // Reseta classes e propriedades de animação
+      titleDisplayText.classList.remove('animate-marquee');
+      titleDisplayText.style.removeProperty('--scroll-dist');
+
+      if (currentMode === 'read') {
+        titleInput.style.display = 'none';
+        titleDisplayContainer.style.display = 'flex';
+
+        // Executa a medição após renderização
+        setTimeout(() => {
+          const containerWidth = titleDisplayContainer.clientWidth;
+          const textWidth = titleDisplayText.scrollWidth;
+          if (textWidth > containerWidth && containerWidth > 0) {
+            const scrollDist = textWidth - containerWidth;
+            // Define o deslocamento exato para a animação
+            titleDisplayText.style.setProperty('--scroll-dist', `-${scrollDist + 16}px`);
+            titleDisplayText.classList.add('animate-marquee');
+          }
+        }, 150);
+      } else {
+        titleInput.style.display = 'block';
+        titleDisplayContainer.style.display = 'none';
+      }
+    }
+
     // Controle de Modos e Visibilidade
     function setMode(mode) {
       currentMode = mode;
@@ -2132,34 +2336,65 @@
       const cover = note ? note.cover : null;
       const formatToolbar = document.getElementById('format-toolbar');
       const titleInput = document.getElementById('note-title-input');
+      const header = document.querySelector('.app-header');
 
-      if (titleInput) {
-        titleInput.disabled = (mode === 'read');
+      // Atualiza margem do editor para não sobrepor a barra de ferramentas
+      if (editorPanesWrapper) {
+        editorPanesWrapper.style.marginBottom = (mode === 'read') ? '0px' : '44px';
       }
 
-      readPane.classList.remove('active');
-      editVisualPane.classList.remove('active');
+      // Atualiza o fundo da barra superior conforme a presença da capa e rolagem
+      updateHeaderBackground();
+
+      updateHeaderTitleDisplay(note);
+
+      if (readPaneWrapper) readPaneWrapper.classList.remove('active');
+      if (editVisualWrapper) editVisualWrapper.classList.remove('active');
       if (rawPaneWrapper) rawPaneWrapper.classList.remove('active');
 
-      const coverHtml = renderCoverHTML(cover);
-
       if (mode === 'read') {
-        readPane.innerHTML = coverHtml + (content ? marked.parse(content) : '');
-        readPane.classList.add('active');
+        if (readCoverBox) {
+          if (cover) {
+            readCoverBox.innerHTML = `<img src="${cover}" alt="Capa da Nota">`;
+            readCoverBox.style.display = 'block';
+          } else {
+            readCoverBox.innerHTML = '';
+            readCoverBox.style.display = 'none';
+          }
+        }
+        readPane.innerHTML = content ? marked.parse(content) : '';
+        if (readPaneWrapper) readPaneWrapper.classList.add('active');
 
-        editBtn.style.display = 'block';
+        // Oculta o botão de editar se a edição com 2 cliques estiver ligada
+        editBtn.style.display = doubleClickEdit ? 'none' : 'block';
         saveBtn.style.display = 'none';
         if (formatToolbar) formatToolbar.classList.remove('visible');
 
+        // Limpa o timer de salvamento automático ao entrar no modo leitura
+        if (autoSaveTimer) {
+          clearTimeout(autoSaveTimer);
+          autoSaveTimer = null;
+        }
+
       } else if (mode === 'visual') {
-        editVisualPane.innerHTML = coverHtml + (content ? marked.parse(content) : '');
-        editVisualPane.classList.add('active');
+        if (editVisualCoverBox) {
+          if (cover) {
+            editVisualCoverBox.innerHTML = `<img src="${cover}" alt="Capa da Nota">`;
+            editVisualCoverBox.style.display = 'block';
+          } else {
+            editVisualCoverBox.innerHTML = '';
+            editVisualCoverBox.style.display = 'none';
+          }
+        }
+        editVisualPane.innerHTML = content ? marked.parse(content) : '';
+        if (editVisualWrapper) editVisualWrapper.classList.add('active');
         updateVisualPanePlaceholder();
 
         editBtn.style.display = 'none';
         saveBtn.style.display = 'block';
         editVisualPane.focus();
         if (formatToolbar) formatToolbar.classList.add('visible');
+        resetAutoSaveTimer();
 
       } else if (mode === 'raw') {
         if (rawCoverBox) {
@@ -2186,6 +2421,7 @@
         saveBtn.style.display = 'block';
         rawPane.focus();
         if (formatToolbar) formatToolbar.classList.add('visible');
+        resetAutoSaveTimer();
         
         setTimeout(autoResizeRawPane, 50);
       }
@@ -2300,53 +2536,166 @@
     function insertFormat(type) {
       if (currentMode === 'visual') {
         editVisualPane.focus();
-        if (type === 'bold') {
-          document.execCommand('bold', false);
-        } else if (type === 'italic') {
-          document.execCommand('italic', false);
+        const selection = window.getSelection();
+        
+        if (type === 'bold' || type === 'italic') {
+          // Se não há texto selecionado, seleciona a linha inteira primeiro
+          if (selection.isCollapsed) {
+            selectCurrentLineVisual();
+          }
+          if (type === 'bold') {
+            document.execCommand('bold', false);
+          } else {
+            document.execCommand('italic', false);
+          }
+          editVisualPane.dispatchEvent(new Event('input'));
         } else if (type === 'header') {
-          document.execCommand('formatBlock', false, '<h3>');
+          toggleHeadingVisual();
         } else if (type === 'quote') {
           document.execCommand('formatBlock', false, '<blockquote>');
+          editVisualPane.dispatchEvent(new Event('input'));
         } else if (type === 'list') {
           document.execCommand('insertUnorderedList', false);
+          editVisualPane.dispatchEvent(new Event('input'));
         } else if (type === 'code') {
-          const selection = window.getSelection();
           if (!selection.isCollapsed) {
             const range = selection.getRangeAt(0);
             const code = document.createElement('code');
             code.appendChild(range.extractContents());
             range.insertNode(code);
+            editVisualPane.dispatchEvent(new Event('input'));
           }
         }
-        editVisualPane.dispatchEvent(new Event('input'));
       } else if (currentMode === 'raw') {
         rawPane.focus();
         const start = rawPane.selectionStart;
         const end = rawPane.selectionEnd;
         const text = rawPane.value;
-        const selectedText = text.substring(start, end);
-        let replacement = '';
-
-        if (type === 'bold') {
-          replacement = `**${selectedText}**`;
-        } else if (type === 'italic') {
-          replacement = `*${selectedText}*`;
-        } else if (type === 'header') {
-          replacement = `\n### ${selectedText}`;
-        } else if (type === 'quote') {
-          replacement = `\n> ${selectedText}`;
-        } else if (type === 'list') {
-          replacement = `\n- ${selectedText}`;
-        } else if (type === 'code') {
-          replacement = `\`${selectedText}\``;
-        }
-
-        rawPane.value = text.substring(0, start) + replacement + text.substring(end);
-        rawPane.selectionStart = start + replacement.length;
-        rawPane.selectionEnd = start + replacement.length;
         
-        rawPane.dispatchEvent(new Event('input'));
+        if (type === 'bold' || type === 'italic') {
+          if (start === end) {
+            // Seleciona a linha atual sob o cursor
+            const { start: lineStart, end: lineEnd } = getCurrentLineIndices(text, start);
+            const lineText = text.substring(lineStart, lineEnd);
+            const replacement = type === 'bold' ? `**${lineText}**` : `*${lineText}*`;
+            
+            rawPane.value = text.substring(0, lineStart) + replacement + text.substring(lineEnd);
+            rawPane.selectionStart = lineStart + replacement.length;
+            rawPane.selectionEnd = lineStart + replacement.length;
+          } else {
+            const selectedText = text.substring(start, end);
+            const replacement = type === 'bold' ? `**${selectedText}**` : `*${selectedText}*`;
+            rawPane.value = text.substring(0, start) + replacement + text.substring(end);
+            rawPane.selectionStart = start + replacement.length;
+            rawPane.selectionEnd = start + replacement.length;
+          }
+          rawPane.dispatchEvent(new Event('input'));
+        } else if (type === 'header') {
+          const { start: lineStart, end: lineEnd } = getCurrentLineIndices(text, start);
+          const lineText = text.substring(lineStart, lineEnd);
+          
+          let cleanText = lineText;
+          let prefix = '#### ';
+          
+          if (lineText.startsWith('#### ')) {
+            cleanText = lineText.substring(5);
+            prefix = '### ';
+          } else if (lineText.startsWith('### ')) {
+            cleanText = lineText.substring(4);
+            prefix = '## ';
+          } else if (lineText.startsWith('## ')) {
+            cleanText = lineText.substring(3);
+            prefix = '# ';
+          } else if (lineText.startsWith('# ')) {
+            cleanText = lineText.substring(2);
+            prefix = ''; // Volta ao normal
+          }
+          
+          const replacement = prefix + cleanText;
+          rawPane.value = text.substring(0, lineStart) + replacement + text.substring(lineEnd);
+          rawPane.selectionStart = lineStart + replacement.length;
+          rawPane.selectionEnd = lineStart + replacement.length;
+          rawPane.dispatchEvent(new Event('input'));
+        } else {
+          const selectedText = text.substring(start, end);
+          let replacement = '';
+          if (type === 'quote') {
+            replacement = `\n> ${selectedText}`;
+          } else if (type === 'list') {
+            replacement = `\n- ${selectedText}`;
+          } else if (type === 'code') {
+            replacement = `\`${selectedText}\``;
+          }
+          rawPane.value = text.substring(0, start) + replacement + text.substring(end);
+          rawPane.selectionStart = start + replacement.length;
+          rawPane.selectionEnd = start + replacement.length;
+          rawPane.dispatchEvent(new Event('input'));
+        }
+      }
+    }
+
+    // Helper: Encontra os índices de início e fim da linha atual no textarea
+    function getCurrentLineIndices(text, caretPos) {
+      const start = text.lastIndexOf('\n', caretPos - 1) + 1;
+      let end = text.indexOf('\n', caretPos);
+      if (end === -1) end = text.length;
+      return { start, end };
+    }
+
+    // Helper: Seleciona o conteúdo do bloco/linha atual no editor visual
+    function selectCurrentLineVisual() {
+      const selection = window.getSelection();
+      if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        let node = range.startContainer;
+        while (node && node !== editVisualPane && node.parentNode !== editVisualPane) {
+          node = node.parentNode;
+        }
+        if (node && node !== editVisualPane) {
+          const newRange = document.createRange();
+          newRange.selectNodeContents(node);
+          selection.removeAllRanges();
+          selection.addRange(newRange);
+        }
+      }
+    }
+
+    // Helper: Alterna os cabeçalhos no modo visual (H4 -> H3 -> H2 -> H1 -> DIV/Normal)
+    function toggleHeadingVisual() {
+      const selection = window.getSelection();
+      if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        let node = range.startContainer;
+        while (node && node !== editVisualPane && node.parentNode !== editVisualPane) {
+          node = node.parentNode;
+        }
+        
+        // Se o cursor estiver na raiz vazia do editor
+        if (!node || node === editVisualPane) {
+          document.execCommand('formatBlock', false, '<h4>');
+          return;
+        }
+        
+        const tag = node.tagName.toUpperCase();
+        let newTag = 'H4';
+        if (tag === 'H4') newTag = 'H3';
+        else if (tag === 'H3') newTag = 'H2';
+        else if (tag === 'H2') newTag = 'H1';
+        else if (tag === 'H1') newTag = 'DIV'; // Volta ao normal
+        
+        const newElem = document.createElement(newTag);
+        while (node.firstChild) {
+          newElem.appendChild(node.firstChild);
+        }
+        node.parentNode.replaceChild(newElem, node);
+        
+        const newRange = document.createRange();
+        newRange.selectNodeContents(newElem);
+        newRange.collapse(false); // Coloca o cursor no final
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+        
+        editVisualPane.dispatchEvent(new Event('input'));
       }
     }
 
@@ -2357,6 +2706,20 @@
 
     // Modal de Preferências Listeners
     preferencesBtn.addEventListener('click', () => {
+      // Popula inputs com os valores atuais salvos
+      prefMarkdownCheckbox.checked = localStorage.getItem('notepad_prefers_markdown') === 'true';
+      prefDoubleClickCheckbox.checked = localStorage.getItem('notepad_double_click_edit') === 'true';
+
+      // Mostra a barra flutuante de instalação se o PWA for instalável
+      const dismissed = sessionStorage.getItem('pwa_install_dismissed');
+      if (pwaInstallBanner) {
+        if (deferredPrompt && !isCapacitor && !dismissed) {
+          pwaInstallBanner.style.display = 'flex';
+        } else {
+          pwaInstallBanner.style.display = 'none';
+        }
+      }
+
       preferencesModal.classList.add('active');
       preferencesModal.style.display = 'flex';
       closeSidebar();
@@ -2371,36 +2734,146 @@
       }, 250);
     };
 
-    closePreferencesBtn.addEventListener('click', closePreferences);
-    preferencesModal.addEventListener('click', (e) => {
+    const cancelPreferencesBtn = document.getElementById('cancel-preferences-btn');
+    const applyPreferencesBtn = document.getElementById('apply-preferences-btn');
+
+    if (cancelPreferencesBtn) {
+      cancelPreferencesBtn.addEventListener('click', closePreferences);
+    }
+
+    if (applyPreferencesBtn) {
+      applyPreferencesBtn.addEventListener('click', () => {
+        const wantsMarkdown = prefMarkdownCheckbox.checked;
+        const wantsDoubleClick = prefDoubleClickCheckbox.checked;
+
+        // Salva de fato no LocalStorage
+        prefersMarkdown = wantsMarkdown;
+        doubleClickEdit = wantsDoubleClick;
+        localStorage.setItem('notepad_prefers_markdown', wantsMarkdown);
+        localStorage.setItem('notepad_double_click_edit', wantsDoubleClick);
+
+        // Aplica transições de modo dependendo da preferência de Markdown
+        if (wantsMarkdown) {
+          if (currentMode === 'visual') {
+            const note = NoteStorage.notes.find(n => n.id === currentNoteId);
+            if (note) note.content = getMarkdownFromHtml(editVisualPane);
+            setMode('raw');
+          }
+        } else {
+          if (currentMode === 'raw') {
+            const note = NoteStorage.notes.find(n => n.id === currentNoteId);
+            if (note) note.content = rawPane.value;
+            setMode('visual');
+          }
+        }
+
+        // Atualiza a visibilidade do botão de editar
+        const note = NoteStorage.notes.find(n => n.id === currentNoteId);
+        setMode(currentMode);
+
+        closePreferences();
+      });
+    }
+
+     // --- Controle de Comportamento Inicial (Ao Iniciar) ---
+    const startupBehaviorModal = document.getElementById('startup-behavior-modal');
+    const closeStartupModalBtn = document.getElementById('close-startup-modal-btn');
+    const cancelStartupBtn = document.getElementById('cancel-startup-btn');
+    const confirmStartupBtn = document.getElementById('confirm-startup-btn');
+
+    if (prefStartupBtn) {
+      prefStartupBtn.addEventListener('click', () => {
+        closePreferences();
+        closeSidebar();
+        
+        // Popula as opções do rádio com o valor salvo
+        const savedBehavior = localStorage.getItem('notepad_startup_behavior') || 'last';
+        const activeRadio = startupBehaviorModal.querySelector(`input[name="startup-option"][value="${savedBehavior}"]`);
+        if (activeRadio) {
+          activeRadio.checked = true;
+        }
+        
+        startupBehaviorModal.style.display = 'flex';
+        setTimeout(() => startupBehaviorModal.classList.add('active'), 10);
+      });
+    }
+
+    const closeStartupModal = () => {
+      startupBehaviorModal.classList.remove('active');
+      setTimeout(() => {
+        if (!startupBehaviorModal.classList.contains('active')) {
+          startupBehaviorModal.style.display = 'none';
+        }
+      }, 300);
+      
+      // Reabre as preferências
+      preferencesModal.classList.add('active');
+      preferencesModal.style.display = 'flex';
+    };
+
+    if (cancelStartupBtn) cancelStartupBtn.addEventListener('click', closeStartupModal);
+    if (closeStartupModalBtn) closeStartupModalBtn.addEventListener('click', closeStartupModal);
+
+    if (confirmStartupBtn) {
+      confirmStartupBtn.addEventListener('click', () => {
+        const checkedRadio = startupBehaviorModal.querySelector('input[name="startup-option"]:checked');
+        if (checkedRadio) {
+          localStorage.setItem('notepad_startup_behavior', checkedRadio.value);
+        }
+        closeStartupModal();
+      });
+    }
+
+    // Fecha o modal ao clicar fora da área dele
+    window.addEventListener('click', (e) => {
       if (e.target === preferencesModal) {
         closePreferences();
       }
-    });
-
-    prefMarkdownCheckbox.addEventListener('change', () => {
-      prefersMarkdown = prefMarkdownCheckbox.checked;
-      localStorage.setItem('notepad_prefers_markdown', prefersMarkdown);
-      
-      if (prefersMarkdown) {
-        if (currentMode === 'visual') {
-          const note = NoteStorage.notes.find(n => n.id === currentNoteId);
-          if (note) note.content = getMarkdownFromHtml(editVisualPane);
-          setMode('raw');
-        }
-      } else {
-        if (currentMode === 'raw') {
-          const note = NoteStorage.notes.find(n => n.id === currentNoteId);
-          if (note) note.content = rawPane.value;
-          setMode('visual');
-        }
+      if (e.target === startupBehaviorModal) {
+        closeStartupModal();
       }
     });
 
-    const prefStartupSelect = document.getElementById('pref-startup-select');
-    if (prefStartupSelect) {
-      prefStartupSelect.addEventListener('change', () => {
-        localStorage.setItem('notepad_startup_behavior', prefStartupSelect.value);
+    // --- Controle de Espaçamento de Linhas (Line-Height) ---
+    const prefLineHeightBtn = document.getElementById('pref-line-height-btn');
+    const lineHeightControlCard = document.getElementById('line-height-control-card');
+    const lineHeightSlider = document.getElementById('line-height-slider');
+    const lineHeightValuePreview = document.getElementById('line-height-value-preview');
+    const confirmLineHeightBtn = document.getElementById('confirm-line-height-btn');
+
+    // Recupera valor inicial salvo ou usa padrão
+    let currentLineHeight = parseFloat(localStorage.getItem('notepad_line_height')) || 1.6;
+    document.documentElement.style.setProperty('--line-height', currentLineHeight);
+    if (lineHeightSlider) lineHeightSlider.value = currentLineHeight;
+    if (lineHeightValuePreview) lineHeightValuePreview.textContent = currentLineHeight.toFixed(1);
+
+    if (prefLineHeightBtn) {
+      prefLineHeightBtn.addEventListener('click', () => {
+        closePreferences();
+        closeSidebar();
+        if (lineHeightControlCard) {
+          lineHeightControlCard.style.display = 'flex';
+        }
+      });
+    }
+
+    if (lineHeightSlider) {
+      lineHeightSlider.addEventListener('input', () => {
+        const val = parseFloat(lineHeightSlider.value);
+        if (lineHeightValuePreview) {
+          lineHeightValuePreview.textContent = val.toFixed(1);
+        }
+        document.documentElement.style.setProperty('--line-height', val);
+      });
+    }
+
+    if (confirmLineHeightBtn) {
+      confirmLineHeightBtn.addEventListener('click', () => {
+        const val = parseFloat(lineHeightSlider.value);
+        localStorage.setItem('notepad_line_height', val);
+        if (lineHeightControlCard) {
+          lineHeightControlCard.style.display = 'none';
+        }
       });
     }
 
@@ -2479,7 +2952,7 @@
       });
     }
 
-    // Auto-save durante a digitação
+    // Auto-save e manter cursor visível durante a digitação (Modo Visual)
     editVisualPane.addEventListener('input', async () => {
       updateVisualPanePlaceholder();
       const note = NoteStorage.notes.find(n => n.id === currentNoteId);
@@ -2493,8 +2966,20 @@
           activeItem.textContent = getNoteDisplayTitle(note);
         }
       }
+      keepCaretInViewVisual();
+      resetAutoSaveTimer();
     });
 
+    editVisualPane.addEventListener('keyup', keepCaretInViewVisual);
+    editVisualPane.addEventListener('click', keepCaretInViewVisual);
+    editVisualPane.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        setTimeout(keepCaretInViewVisual, 10);
+      }
+      resetAutoSaveTimer();
+    });
+
+    // Auto-save e manter cursor visível durante a digitação (Modo Raw/Markdown)
     rawPane.addEventListener('input', async () => {
       const note = NoteStorage.notes.find(n => n.id === currentNoteId);
       if (note) {
@@ -2508,6 +2993,16 @@
         }
       }
       autoResizeRawPane();
+      keepCaretInViewRaw();
+      resetAutoSaveTimer();
+    });
+
+    rawPane.addEventListener('keyup', keepCaretInViewRaw);
+    rawPane.addEventListener('click', keepCaretInViewRaw);
+    rawPane.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        setTimeout(keepCaretInViewRaw, 10);
+      }
     });
 
     function autoResizeRawPane() {
@@ -2517,10 +3012,164 @@
       }
     }
 
+    // Mantém o cursor visível no Modo Visual
+    function keepCaretInViewVisual() {
+      const selection = window.getSelection();
+      if (!selection.rangeCount) return;
+      const range = selection.getRangeAt(0);
+      let rect = null;
+      
+      const rects = range.getClientRects();
+      if (rects.length > 0) {
+        rect = rects[0];
+      } else {
+        // Correção para linhas vazias/pressionamento de Enter:
+        // Insere um elemento temporário para capturar a coordenada Y exata do cursor
+        const tempSpan = document.createElement('span');
+        tempSpan.innerHTML = '&#8203;'; // caractere de largura zero
+        range.insertNode(tempSpan);
+        rect = tempSpan.getBoundingClientRect();
+        tempSpan.parentNode.removeChild(tempSpan);
+      }
+      
+      if (!rect) return;
+      
+      const paneRect = editVisualWrapper.getBoundingClientRect();
+      const visibleBottom = paneRect.top + editVisualWrapper.clientHeight - 90; // 90px acima do limite inferior
+      
+      if (rect.bottom > visibleBottom) {
+        editVisualWrapper.scrollTop += (rect.bottom - visibleBottom) + 40; // Rola a diferença + respiro
+      }
+    }
+
+    // Mantém o cursor visível no Modo Raw (Markdown)
+    function keepCaretInViewRaw() {
+      const selectionStart = rawPane.selectionStart;
+      
+      // Se estiver digitando no final do texto, rola diretamente para o final do wrapper
+      if (selectionStart >= rawPane.value.length - 1) {
+        rawPaneWrapper.scrollTop = rawPaneWrapper.scrollHeight;
+        return;
+      }
+      
+      const textBeforeCaret = rawPane.value.substring(0, selectionStart);
+      const linesBeforeCaret = textBeforeCaret.split('\n').length;
+      
+      const computedStyle = window.getComputedStyle(rawPane);
+      const lineHeight = parseFloat(computedStyle.lineHeight) || 28;
+      
+      const coverBoxHeight = (rawCoverBox && rawCoverBox.style.display !== 'none') ? rawCoverBox.offsetHeight : 0;
+      const caretY = linesBeforeCaret * lineHeight + coverBoxHeight;
+      
+      const visibleBottom = rawPaneWrapper.scrollTop + rawPaneWrapper.clientHeight - 90; // 90px de margem
+      
+      if (caretY > visibleBottom) {
+        rawPaneWrapper.scrollTop = caretY - rawPaneWrapper.clientHeight + 120; // Puxa a tela para cima
+      }
+    }
+
     window.addEventListener('resize', autoResizeRawPane);
+
+    // Ajustar posição da barra de ferramentas de formatação acima do teclado virtual (Estilo Notion)
+    function updateFormatToolbarPosition() {
+      const formatToolbar = document.getElementById('format-toolbar');
+      if (!formatToolbar) return;
+      
+      if (window.visualViewport) {
+        const viewport = window.visualViewport;
+        const offsetBottom = window.innerHeight - (viewport.offsetTop + viewport.height);
+        
+        // Se o viewport reduziu consideravelmente (teclado aberto)
+        if (window.innerHeight - viewport.height > 60) {
+          formatToolbar.style.position = 'fixed';
+          formatToolbar.style.bottom = `${offsetBottom}px`;
+          if (editorPanesWrapper) {
+            editorPanesWrapper.style.marginBottom = `${offsetBottom + 44}px`;
+          }
+        } else {
+          formatToolbar.style.position = 'absolute';
+          formatToolbar.style.bottom = '0';
+          if (editorPanesWrapper) {
+            editorPanesWrapper.style.marginBottom = (currentMode === 'read') ? '0px' : '44px';
+          }
+        }
+      }
+    }
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', updateFormatToolbarPosition);
+      window.visualViewport.addEventListener('scroll', updateFormatToolbarPosition);
+    }
+
+    editVisualPane.addEventListener('focus', () => setTimeout(updateFormatToolbarPosition, 80));
+    editVisualPane.addEventListener('blur', () => setTimeout(updateFormatToolbarPosition, 80));
+    rawPane.addEventListener('focus', () => setTimeout(updateFormatToolbarPosition, 80));
+    rawPane.addEventListener('blur', () => setTimeout(updateFormatToolbarPosition, 80));
+
+    // --- Controle de Transparência Dinâmica da Barra Superior (Estilo Notion) ---
+    function updateHeaderBackground() {
+      const header = document.querySelector('.app-header');
+      if (!header) return;
+
+      const note = NoteStorage.notes.find(n => n.id === currentNoteId);
+      const hasCover = note && note.cover;
+
+      if (hasCover && activeView === 'editor') {
+        let activePane = null;
+        if (currentMode === 'read') activePane = readPaneWrapper;
+        else if (currentMode === 'visual') activePane = editVisualWrapper;
+        else if (currentMode === 'raw') activePane = rawPaneWrapper;
+
+        const scrollTop = activePane ? activePane.scrollTop : 0;
+        
+        // Transiciona a opacidade de 0 a 1 de 150px a 200px de rolagem da capa
+        let opacity = 0;
+        if (scrollTop > 150) {
+          opacity = Math.min((scrollTop - 150) / 50, 1);
+        }
+        header.style.setProperty('--header-opacity', opacity);
+      } else {
+        // Sem capa ou no Dashboard: barra preta sólida (opacidade 1)
+        header.style.setProperty('--header-opacity', 1);
+      }
+    }
+
+    // Registra ouvinte de rolagem nas visualizações para atualizar o fundo do header
+    if (readPaneWrapper) readPaneWrapper.addEventListener('scroll', updateHeaderBackground);
+    if (editVisualWrapper) editVisualWrapper.addEventListener('scroll', updateHeaderBackground);
+    if (rawPaneWrapper) rawPaneWrapper.addEventListener('scroll', updateHeaderBackground);
 
     function updateDocumentTitle(title) {
       document.title = title || "Bloco de Notas";
+    }
+
+    // --- Edição com 2 Cliques & Auto-salvamento ---
+    let autoSaveTimer = null;
+
+    function resetAutoSaveTimer() {
+      if (autoSaveTimer) {
+        clearTimeout(autoSaveTimer);
+        autoSaveTimer = null;
+      }
+      if (doubleClickEdit && (currentMode === 'visual' || currentMode === 'raw')) {
+        autoSaveTimer = setTimeout(() => {
+          if (saveBtn) {
+            saveBtn.click();
+          }
+        }, 10000); // 10 segundos de inatividade
+      }
+    }
+
+    // Ouvinte para dar dois cliques no painel de leitura e abrir o editor
+    if (readPaneWrapper) {
+      readPaneWrapper.addEventListener('dblclick', (e) => {
+        if (doubleClickEdit && currentMode === 'read') {
+          // Impede a propagação se o clique foi em algum elemento interativo (como um link)
+          if (e.target.tagName === 'A' || e.target.closest('a')) return;
+          
+          setMode(prefersMarkdown ? 'raw' : 'visual');
+        }
+      });
     }
 
     // Zoom (Pinch-to-Zoom e Ctrl+Scroll)
@@ -2556,6 +3205,23 @@
       updateFontSize(currentFontSize);
     }
     initApp();
+
+
+
+
+
+    // Impede o deslocamento/bouncing do viewport do app em elementos não roláveis
+    document.addEventListener('touchmove', (e) => {
+      const isScrollable = e.target.closest('.view-pane') || 
+                           e.target.closest('.notes-list') || 
+                           e.target.closest('.dashboard-pane') ||
+                           e.target.closest('.cards-scroll-container') ||
+                           e.target.closest('.note-menu-dropdown') ||
+                           e.target.closest('#line-height-control-card');
+      if (!isScrollable) {
+        e.preventDefault();
+      }
+    }, { passive: false });
 
     let initialDistance = null;
     let initialFontSize = 18;
@@ -2609,26 +3275,30 @@
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
-      if (!isCapacitor && installAppSetting) {
-        installAppSetting.style.display = 'flex';
-      }
     });
 
-    if (installAppBtn) {
-      installAppBtn.addEventListener('click', async () => {
+    if (pwaInstallBtn) {
+      pwaInstallBtn.addEventListener('click', async () => {
         if (!deferredPrompt) return;
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
         console.log(`Escolha do usuário sobre instalação: ${outcome}`);
         deferredPrompt = null;
-        if (installAppSetting) installAppSetting.style.display = 'none';
+        if (pwaInstallBanner) pwaInstallBanner.style.display = 'none';
+      });
+    }
+
+    if (pwaDismissBtn) {
+      pwaDismissBtn.addEventListener('click', () => {
+        if (pwaInstallBanner) pwaInstallBanner.style.display = 'none';
+        sessionStorage.setItem('pwa_install_dismissed', 'true');
       });
     }
 
     window.addEventListener('appinstalled', () => {
       console.log('Aplicativo instalado com sucesso.');
       deferredPrompt = null;
-      if (installAppSetting) installAppSetting.style.display = 'none';
+      if (pwaInstallBanner) pwaInstallBanner.style.display = 'none';
     });
   </script>
 </body>
