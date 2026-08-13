@@ -65,6 +65,14 @@ As notas armazenam metadados (como capa, ícone personalizado, status de fixado 
 
 A função `extractCoverAndContent()` divide o conteúdo cru nesses metadados, enquanto `packCoverAndContent()` remonta a string da nota para salvar.
 
+* **Fluxo da Capa da Nota**:
+  * O botão "Capa" permanece permanentemente visível no menu de opções (dropdown de 3 pontinhos) da nota, permitindo ao usuário abrir o modal de capa a qualquer momento para alterá-la.
+  * A opção "Remover Capa" foi movida exclusivamente para o interior do modal da capa (`cover-modal-remove-btn`), removendo redundâncias no menu de 3 pontinhos.
+  * O botão de atalho rápido de exclusão (✖) sobreposto diretamente à imagem da capa foi removido das renderizações de tela para manter um design limpo e evitar acionamentos acidentais.
+  * **Ajuste por Gestos (Pan e Zoom)**: O controle manual de altura por slider foi removido. A imagem agora pode ser arrastada (pan) e ampliada (pinch-to-zoom) no preview do modal usando um ou dois dedos (e cliques de mouse). As coordenadas e a escala são validadas de forma a impedir que a imagem fique menor que o contêiner. O comportamento de renderização usa `object-fit: contain` tanto no preview quanto nos cabeçalhos finais da nota. Para evitar barras vazias inicialmente, a função `initScaleToFill()` calcula e aplica o nível mínimo de zoom necessário para que a foto cubra 100% da área útil ao ser selecionada pela primeira vez. Esse limite mínimo é imposto dinamicamente no `applyConstraints()`, garantindo o preenchimento total e contínuo do campo. Esses parâmetros são salvos no comentário `<!--COVER_TRANSFORM:translate(...) scale(...)-->` e aplicados na exibição final da capa da nota. Adicionalmente, as transformações são redefinidas para o estado original sempre que uma nova imagem de capa é selecionada (via upload ou link) ou removida.
+
+
+
 ### 4.3 Fluxos de Visualização
 * **Dashboard View**: Exibe notas recentes em formato de cartões (cards), com barra de rolagem horizontal, além de atalhos e visualizações gerais.
 * **Editor View**:

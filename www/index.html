@@ -1586,18 +1586,9 @@
         </div>
       </div>
 
-      <!-- Redimensionador de Altura -->
-      <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-color);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <label style="color: var(--text-primary); font-size: 14px; font-weight: 500;">Redimensionar Altura</label>
-          <span id="cover-height-value" style="color: var(--accent); font-size: 13px; font-weight: 600;">200px</span>
-        </div>
-        <input type="range" id="cover-height-slider" min="100" max="500" step="10" value="200" style="width: 100%; accent-color: var(--accent); cursor: pointer;">
-      </div>
-
       <!-- Preview da Capa -->
       <div style="margin-top: 16px;">
-        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">Pré-visualização:</p>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">Pré-visualização (Arraste para mover, use dois dedos para zoom):</p>
         <div id="cover-preview-box" class="note-cover-box" style="height: 140px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); border: 1px dashed var(--border-color); border-radius: 10px; overflow: hidden; transition: height 0.2s ease;">
           <span style="color: var(--text-muted); font-size: 13px;">Nenhuma imagem selecionada</span>
         </div>
@@ -1964,12 +1955,19 @@
       let pinned = false;
       let icon = null;
       let coverHeight = 200;
+      let coverTransform = '';
       let content = rawContent || '';
       
       const heightMatch = content.match(/^<!--COVER_HEIGHT:(.*?)-->\n?/);
       if (heightMatch) {
         coverHeight = parseInt(heightMatch[1], 10) || 200;
         content = content.replace(/^<!--COVER_HEIGHT:(.*?)-->\n?/, '');
+      }
+
+      const transformMatch = content.match(/^<!--COVER_TRANSFORM:(.*?)-->\n?/);
+      if (transformMatch) {
+        coverTransform = transformMatch[1];
+        content = content.replace(/^<!--COVER_TRANSFORM:(.*?)-->\n?/, '');
       }
       
       const pinnedMatch = content.match(/^<!--PINNED:(.*?)-->\n?/);
@@ -2004,10 +2002,10 @@
         content = content.replace(mdImageRegex, '');
       }
 
-      return { cover, pinned, icon, coverHeight, content };
+      return { cover, pinned, icon, coverHeight, coverTransform, content };
     }
 
-    function packCoverAndContent(content, cover, pinned, icon, coverHeight = 200) {
+    function packCoverAndContent(content, cover, pinned, icon, coverHeight = 200, coverTransform = '') {
       let meta = '';
       if (pinned) {
         meta += `<!--PINNED:true-->\n`;
@@ -2017,6 +2015,9 @@
       }
       if (coverHeight && coverHeight !== 200) {
         meta += `<!--COVER_HEIGHT:${coverHeight}-->\n`;
+      }
+      if (coverTransform) {
+        meta += `<!--COVER_TRANSFORM:${coverTransform}-->\n`;
       }
       if (cover) {
         meta += `![capa](${cover})\n`;
@@ -2161,10 +2162,12 @@
             const existingCover = n.cover;
             const existingPinned = n.pinned;
             const existingIcon = n.icon;
+            const existingTransform = n.coverTransform;
             const parsed = extractCoverAndContent(n.content);
             n.cover = parsed.cover !== null ? parsed.cover : (existingCover !== undefined ? existingCover : null);
             n.pinned = parsed.pinned || (existingPinned === true);
             n.icon = parsed.icon !== null ? parsed.icon : (existingIcon !== undefined ? existingIcon : null);
+            n.coverTransform = parsed.coverTransform !== null ? parsed.coverTransform : (existingTransform !== undefined ? existingTransform : '');
             n.content = parsed.content;
           }
         });
@@ -2211,20 +2214,21 @@
             const parsed = extractCoverAndContent(fsContent);
             const localNote = localNotes.find(n => n.id === id);
             if (!localNote) {
-              localNotes.push({ id, content: parsed.content, cover: parsed.cover, pinned: parsed.pinned, icon: parsed.icon, coverHeight: parsed.coverHeight });
+              localNotes.push({ id, content: parsed.content, cover: parsed.cover, pinned: parsed.pinned, icon: parsed.icon, coverHeight: parsed.coverHeight, coverTransform: parsed.coverTransform });
               hasChanges = true;
-            } else if (localNote.content !== parsed.content || localNote.cover !== parsed.cover || localNote.pinned !== parsed.pinned || localNote.icon !== parsed.icon) {
+            } else if (localNote.content !== parsed.content || localNote.cover !== parsed.cover || localNote.pinned !== parsed.pinned || localNote.icon !== parsed.icon || localNote.coverTransform !== parsed.coverTransform) {
               localNote.content = parsed.content;
               localNote.cover = parsed.cover; localNote.coverHeight = parsed.coverHeight;
               localNote.pinned = parsed.pinned;
               localNote.icon = parsed.icon;
+              localNote.coverTransform = parsed.coverTransform;
               hasChanges = true;
             }
           });
 
           for (const localNote of localNotes) {
             if (!fsNotesMap.has(localNote.id)) {
-              const fullContent = packCoverAndContent(localNote.content, localNote.cover, localNote.pinned, localNote.icon, localNote.coverHeight);
+              const fullContent = packCoverAndContent(localNote.content, localNote.cover, localNote.pinned, localNote.icon, localNote.coverHeight, localNote.coverTransform);
               await this.saveNoteFS(localNote.id, fullContent);
             }
           }
@@ -2599,19 +2603,14 @@
     const coverPreviewBox = document.getElementById('cover-preview-box');
 
     let tempCoverData = null;
+    let tempCoverTransform = '';
 
     function openCoverModal() {
       if (!coverModal) return;
       const note = NoteStorage.notes.find(n => n.id === currentNoteId);
       tempCoverData = note && note.cover ? note.cover : null;
-      let tempHeight = note && note.coverHeight ? note.coverHeight : 200;
+      tempCoverTransform = note && note.coverTransform ? note.coverTransform : '';
       
-      if (coverHeightSlider) {
-        coverHeightSlider.value = tempHeight;
-      }
-      if (coverHeightValue) {
-        coverHeightValue.textContent = tempHeight + 'px';
-      }
       if (coverUrlInput) {
         coverUrlInput.value = (tempCoverData && (tempCoverData.startsWith('http://') || tempCoverData.startsWith('https://'))) ? tempCoverData : '';
       }
@@ -2630,15 +2629,17 @@
         }
       }, 300);
       tempCoverData = null;
+      tempCoverTransform = '';
     }
 
     function updateCoverPreview() {
       if (!coverPreviewBox) return;
-      const h = coverHeightSlider ? coverHeightSlider.value : 200;
-      coverPreviewBox.style.height = Math.min(parseInt(h, 10), 180) + 'px';
+      coverPreviewBox.style.height = '140px';
       if (tempCoverData) {
-        coverPreviewBox.innerHTML = `<img src="${tempCoverData}" style="width:100%; height:100%; object-fit:cover;" alt="Preview">`;
+        const styleText = tempCoverTransform ? `transform: ${tempCoverTransform}; transform-origin: center;` : '';
+        coverPreviewBox.innerHTML = `<img id="cover-preview-img" src="${tempCoverData}" style="width:100%; height:100%; object-fit:contain; touch-action:none; user-select:none; ${styleText}" alt="Preview">`;
         coverPreviewBox.style.borderStyle = 'none';
+        setupImageGestureHandlers();
       } else {
         coverPreviewBox.innerHTML = `<span style="color: var(--text-muted); font-size: 13px;">Nenhuma imagem selecionada</span>`;
         coverPreviewBox.style.borderStyle = 'dashed';
@@ -2673,11 +2674,203 @@
       });
     }
 
-    if (coverHeightSlider) {
-      coverHeightSlider.addEventListener('input', (e) => {
-        if (coverHeightValue) coverHeightValue.textContent = e.target.value + 'px';
-        updateCoverPreview();
+    // Configuração de Gestos Multitouch (Zoom e Mover)
+    function setupImageGestureHandlers() {
+      const img = document.getElementById('cover-preview-img');
+      if (!img) return;
+
+      let scale = 1;
+      let translateX = 0;
+      let translateY = 0;
+
+      // Parse da transformação existente
+      if (tempCoverTransform) {
+        const scaleMatch = tempCoverTransform.match(/scale\((.*?)\)/);
+        if (scaleMatch) scale = parseFloat(scaleMatch[1]) || 1;
+        const translateMatch = tempCoverTransform.match(/translate\((.*?)px,\s*(.*?)px\)/);
+        if (translateMatch) {
+          translateX = parseFloat(translateMatch[1]) || 0;
+          translateY = parseFloat(translateMatch[2]) || 0;
+        }
+      }
+
+      let isDragging = false;
+      let startX = 0;
+      let startY = 0;
+      let baseTranslateX = translateX;
+      let baseTranslateY = translateY;
+
+      // Estado do Pinch-to-Zoom e Touch dragging
+      let touchStartDist = 0;
+      let baseScale = scale;
+      let isTouchDragging = false;
+      let startTouchX = 0;
+      let startTouchY = 0;
+
+      img.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'touch') return;
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        baseTranslateX = translateX;
+        baseTranslateY = translateY;
+        img.setPointerCapture(e.pointerId);
       });
+
+      img.addEventListener('pointermove', (e) => {
+        if (e.pointerType === 'touch') return;
+        if (!isDragging) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+
+        translateX = baseTranslateX + dx;
+        translateY = baseTranslateY + dy;
+
+        applyConstraints();
+        updateImgTransform();
+      });
+
+      const endDrag = (e) => {
+        if (isDragging) {
+          isDragging = false;
+          try {
+            img.releasePointerCapture(e.pointerId);
+          } catch(err){}
+        }
+      };
+
+      img.addEventListener('pointerup', endDrag);
+      img.addEventListener('pointercancel', endDrag);
+
+      img.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          isTouchDragging = true;
+          startTouchX = e.touches[0].clientX;
+          startTouchY = e.touches[0].clientY;
+          baseTranslateX = translateX;
+          baseTranslateY = translateY;
+        } else if (e.touches.length === 2) {
+          isTouchDragging = false;
+          touchStartDist = Math.hypot(e.touches[1].clientX - e.touches[0].clientX, e.touches[1].clientY - e.touches[0].clientY);
+          baseScale = scale;
+          baseTranslateX = translateX;
+          baseTranslateY = translateY;
+        }
+      }, { passive: false });
+
+      img.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 1 && isTouchDragging) {
+          e.preventDefault();
+          const dx = e.touches[0].clientX - startTouchX;
+          const dy = e.touches[0].clientY - startTouchY;
+          translateX = baseTranslateX + dx;
+          translateY = baseTranslateY + dy;
+          applyConstraints();
+          updateImgTransform();
+        } else if (e.touches.length === 2 && touchStartDist > 0) {
+          e.preventDefault();
+          const dist = Math.hypot(e.touches[1].clientX - e.touches[0].clientX, e.touches[1].clientY - e.touches[0].clientY);
+          const factor = dist / touchStartDist;
+          
+          // O limite inferior será policiado dinamicamente no applyConstraints()
+          scale = baseScale * factor;
+          applyConstraints();
+          updateImgTransform();
+        }
+      }, { passive: false });
+
+      img.addEventListener('touchend', (e) => {
+        isTouchDragging = false;
+        if (e.touches.length < 2) {
+          touchStartDist = 0;
+        }
+      });
+
+      function initScaleToFill() {
+        const containerWidth = coverPreviewBox.clientWidth;
+        const containerHeight = coverPreviewBox.clientHeight;
+        const imgWidth = img.naturalWidth || containerWidth;
+        const imgHeight = img.naturalHeight || containerHeight;
+        const containerRatio = containerWidth / containerHeight;
+        const imgRatio = imgWidth / imgHeight;
+
+        let renderedWidth = containerWidth;
+        let renderedHeight = containerHeight;
+
+        if (imgRatio > containerRatio) {
+          renderedWidth = containerHeight * imgRatio;
+          scale = containerHeight / (containerWidth / imgRatio); // ou simplesmente cobrir
+          scale = renderedWidth / containerWidth;
+        } else {
+          renderedHeight = containerWidth / imgRatio;
+          scale = renderedHeight / containerHeight;
+        }
+        translateX = 0;
+        translateY = 0;
+      }
+
+      if (img.complete) {
+        if (!tempCoverTransform) {
+          initScaleToFill();
+        }
+        applyConstraints();
+        updateImgTransform();
+      } else {
+        img.addEventListener('load', () => {
+          if (!tempCoverTransform) {
+            initScaleToFill();
+          }
+          applyConstraints();
+          updateImgTransform();
+        });
+      }
+
+      function applyConstraints() {
+        const containerWidth = coverPreviewBox.clientWidth;
+        const containerHeight = coverPreviewBox.clientHeight;
+
+        const imgWidth = img.naturalWidth || containerWidth;
+        const imgHeight = img.naturalHeight || containerHeight;
+
+        const containerRatio = containerWidth / containerHeight;
+        const imgRatio = imgWidth / imgHeight;
+
+        let renderedWidth = containerWidth;
+        let renderedHeight = containerHeight;
+
+        if (imgRatio > containerRatio) {
+          renderedWidth = containerWidth;
+          renderedHeight = containerWidth / imgRatio;
+        } else {
+          renderedHeight = containerHeight;
+          renderedWidth = containerHeight * imgRatio;
+        }
+
+        // Calcula a escala mínima necessária para cobrir 100% da área do contêiner
+        let minScale = 1;
+        if (imgRatio > containerRatio) {
+          minScale = containerHeight / renderedHeight;
+        } else {
+          minScale = containerWidth / renderedWidth;
+        }
+
+        // Impede reduzir o zoom abaixo do nível de cobertura total do contêiner
+        scale = Math.max(minScale, Math.min(scale, minScale * 5));
+
+        const finalWidth = renderedWidth * scale;
+        const finalHeight = renderedHeight * scale;
+
+        const maxTranslateX = Math.max(0, (finalWidth - containerWidth) / 2);
+        const maxTranslateY = Math.max(0, (finalHeight - containerHeight) / 2);
+
+        translateX = Math.max(-maxTranslateX, Math.min(translateX, maxTranslateX));
+        translateY = Math.max(-maxTranslateY, Math.min(translateY, maxTranslateY));
+      }
+
+      function updateImgTransform() {
+        tempCoverTransform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+        img.style.transform = tempCoverTransform;
+      }
     }
 
     if (coverTriggerUploadBtn && coverFileInput) {
@@ -2693,6 +2886,7 @@
           const reader = new FileReader();
           reader.onload = (event) => {
             tempCoverData = event.target.result;
+            tempCoverTransform = ''; // Redefine para as dimensões originais sem cortes ao selecionar nova imagem
             updateCoverPreview();
             coverFileInput.value = '';
           };
@@ -2706,6 +2900,7 @@
         const val = coverUrlInput.value.trim();
         if (val) {
           tempCoverData = val;
+          tempCoverTransform = ''; // Redefine para as dimensões originais sem cortes ao inserir novo link
           updateCoverPreview();
         }
       });
@@ -2716,6 +2911,7 @@
         const val = coverUrlInput.value.trim();
         if (val) {
           tempCoverData = val;
+          tempCoverTransform = ''; // Redefine para as dimensões originais sem cortes ao aplicar link
           updateCoverPreview();
         }
       });
@@ -2726,9 +2922,11 @@
     if (coverModalRemoveBtn) {
       coverModalRemoveBtn.addEventListener('click', async () => {
         tempCoverData = null;
+        tempCoverTransform = '';
         const note = NoteStorage.notes.find(n => n.id === currentNoteId);
         if (note) {
           note.cover = null;
+          note.coverTransform = '';
           await saveNotesToStorage();
           setMode(currentMode);
         }
@@ -2744,7 +2942,7 @@
         const note = NoteStorage.notes.find(n => n.id === currentNoteId);
         if (note) {
           note.cover = tempCoverData;
-          note.coverHeight = coverHeightSlider ? parseInt(coverHeightSlider.value, 10) : 200;
+          note.coverTransform = tempCoverTransform;
           await saveNotesToStorage();
           setMode(currentMode);
         }
@@ -2856,7 +3054,7 @@
         await NoteStorage.saveNotesLS();
         if (isCapacitor) {
           for (const note of NoteStorage.notes) {
-            const packed = packCoverAndContent(note.content, note.cover, note.pinned, note.icon, note.coverHeight || 200);
+            const packed = packCoverAndContent(note.content, note.cover, note.pinned, note.icon, note.coverHeight || 200, note.coverTransform || '');
             await NoteStorage.saveNoteFS(note.id, packed);
           }
         }
@@ -3109,7 +3307,8 @@
           const cHeight = (note && note.coverHeight) ? note.coverHeight : 200;
           if (cover) {
             readCoverBox.style.height = cHeight + 'px';
-            readCoverBox.innerHTML = `<img src="${cover}" alt="Capa da Nota" style="width:100%; height:100%; object-fit:cover;"><button class="note-cover-remove-btn" onclick="window.removeCover()" title="Remover Capa">✖</button>`;
+            const transformStyle = note.coverTransform ? `transform: ${note.coverTransform}; transform-origin: center;` : '';
+            readCoverBox.innerHTML = `<img src="${cover}" alt="Capa da Nota" style="width:100%; height:100%; object-fit:contain; ${transformStyle}">`;
             readCoverBox.style.display = 'block';
           } else {
             readCoverBox.innerHTML = '';
@@ -3138,7 +3337,8 @@
           const cHeight = (note && note.coverHeight) ? note.coverHeight : 200;
           if (cover) {
             editVisualCoverBox.style.height = cHeight + 'px';
-            editVisualCoverBox.innerHTML = `<img src="${cover}" alt="Capa da Nota" style="width:100%; height:100%; object-fit:cover;"><button class="note-cover-remove-btn" onclick="window.removeCover()" title="Remover Capa">✖</button>`;
+            const transformStyle = note.coverTransform ? `transform: ${note.coverTransform}; transform-origin: center;` : '';
+            editVisualCoverBox.innerHTML = `<img src="${cover}" alt="Capa da Nota" style="width:100%; height:100%; object-fit:contain; ${transformStyle}">`;
             editVisualCoverBox.style.display = 'block';
           } else {
             editVisualCoverBox.innerHTML = '';
@@ -3160,7 +3360,8 @@
           const cHeight = (note && note.coverHeight) ? note.coverHeight : 200;
           if (cover) {
             rawCoverBox.style.height = cHeight + 'px';
-            rawCoverBox.innerHTML = `<img src="${cover}" alt="Capa da Nota" style="width:100%; height:100%; object-fit:cover;"><button class="note-cover-remove-btn" onclick="window.removeCover()" title="Remover Capa">✖</button>`;
+            const transformStyle = note.coverTransform ? `transform: ${note.coverTransform}; transform-origin: center;` : '';
+            rawCoverBox.innerHTML = `<img src="${cover}" alt="Capa da Nota" style="width:100%; height:100%; object-fit:contain; ${transformStyle}">`;
             rawCoverBox.style.display = 'block';
             if (rawPaneWrapper) {
               rawPaneWrapper.classList.add('has-cover');
@@ -3198,13 +3399,8 @@
       if (!note) return;
       if (!menuAddCoverBtn || !menuRemoveCoverBtn) return;
       const cover = note.cover;
-      if (cover) {
-        menuAddCoverBtn.style.display = 'none';
-        menuRemoveCoverBtn.style.display = 'flex';
-      } else {
-        menuAddCoverBtn.style.display = 'flex';
-        menuRemoveCoverBtn.style.display = 'none';
-      }
+      menuAddCoverBtn.style.display = 'flex';
+      menuRemoveCoverBtn.style.display = 'none';
 
 
 
