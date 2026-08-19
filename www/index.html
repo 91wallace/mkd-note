@@ -164,21 +164,21 @@
       line-height: 1;
     }
 
-    /* Botão de 3 pontinhos sem fundo/borda e maior */
-    #note-menu-btn {
+    /* Botão de 3 pontinhos e hambúrguer sem fundo/borda e maior */
+    #note-menu-btn, #menu-btn {
       background-color: transparent !important;
       border: none !important;
       box-shadow: none !important;
-      font-size: 26px; /* Aumenta o tamanho dos três pontinhos */
+      font-size: 26px; /* Aumenta o tamanho dos botões */
     }
 
-    #note-menu-btn:hover {
+    #note-menu-btn:hover, #menu-btn:hover {
       background-color: transparent !important;
       border-color: transparent !important;
       transform: translateY(-1px) scale(1.15);
     }
 
-    #note-menu-btn:active {
+    #note-menu-btn:active, #menu-btn:active {
       transform: translateY(1px) scale(0.95);
     }
 
@@ -265,9 +265,9 @@
       width: calc(100% + 60px);
       margin-left: -30px;
       margin-right: -30px;
-      height: 180px;
+      height: 160px;
       overflow: hidden;
-      margin-bottom: 24px;
+      margin-bottom: 8px;
       border-bottom: 1px solid var(--border-color);
       user-select: none;
     }
@@ -1188,14 +1188,12 @@
       background-color: var(--bg-primary);
       color: #e4e4e7;
       user-select: text;
-      overflow: hidden;
     }
 
     /* Modo Edição Visual */
     #edit-visual-pane {
       background-color: var(--bg-primary);
       color: #e4e4e7;
-      overflow: hidden;
       min-height: 500px;
       outline: none;
       position: relative;
@@ -1215,20 +1213,21 @@
       margin: 0 auto;
     }
 
-    .markdown-body h1, .markdown-body h2, .markdown-body h3 { 
-      margin-top: 1.4em;
-      margin-bottom: 0.6em; 
+    .markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4 { 
+      margin-top: 1.2em;
+      margin-bottom: 0.5em; 
       color: #ffffff; 
       font-weight: 600;
     }
     .markdown-body h1 { 
-      font-size: 2.2em; 
+      font-size: 1.55em; 
       border-bottom: 1px solid var(--border-color); 
-      padding-bottom: 0.4em; 
-      margin-bottom: 1em; 
+      padding-bottom: 0.3em; 
+      margin-bottom: 0.8em; 
     }
-    .markdown-body h2 { font-size: 1.65em; }
-    .markdown-body h3 { font-size: 1.3em; }
+    .markdown-body h2 { font-size: 1.35em; }
+    .markdown-body h3 { font-size: 1.2em; }
+    .markdown-body h4 { font-size: 1.1em; }
     .markdown-body p, 
     #edit-visual-pane div, 
     #edit-visual-pane p { 
@@ -1355,6 +1354,212 @@
       background-color: var(--accent);
       color: #ffffff;
     }
+
+    /* Barra de Tags */
+    .note-tags-wrapper {
+      position: relative;
+      transition: all 0.3s ease;
+      margin: 0 auto 2px auto;
+      max-width: 800px;
+      clear: both;
+      box-sizing: border-box;
+    }
+    .note-tags-wrapper.collapsed {
+      margin-bottom: 0;
+      height: 0;
+      min-height: 0;
+    }
+
+    .note-tags-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 38px;
+      height: auto;
+      padding: 4px 0;
+      padding-right: 60px; /* Espaço para os botões de ação */
+      margin-top: 4px;
+      margin-bottom: 0;
+      margin-left: 0;
+      margin-right: 0;
+      background: transparent;
+      user-select: none;
+      box-sizing: border-box;
+      transition: all 0.3s ease;
+      opacity: 1;
+      overflow: hidden;
+    }
+    .note-tags-wrapper.collapsed .note-tags-bar {
+      height: 0;
+      min-height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      margin-top: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .note-tags-list {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap; /* Quebra de linha automática */
+      flex: 1;
+      align-items: center;
+    }
+    .note-tags-bar .rendered-tag {
+      font-size: 16px !important; /* Fonte aumentada para melhor visualização */
+      margin: 0 !important;
+      padding: 3px 8px !important; /* Ajuste sutil de padding */
+      line-height: 1.2 !important;
+      height: auto !important;
+      cursor: default;
+      font-family: var(--font-sans) !important;
+      display: inline-flex;
+      align-items: center;
+    }
+    .note-tags-bar .add-tag-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px dashed var(--border-color);
+      border-radius: 6px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 0 8px;
+      height: 26px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      margin-left: 4px;
+      box-sizing: border-box;
+    }
+    .note-tags-bar .add-tag-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+    .tags-actions-wrapper {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      z-index: 10;
+      transition: all 0.3s ease;
+    }
+    .note-tags-wrapper.collapsed .tags-actions-wrapper {
+      float: right;
+      position: relative;
+      top: 0;
+      transform: none;
+      margin-left: 10px;
+      margin-bottom: 4px;
+      height: 26px;
+      z-index: 10;
+    }
+    .tags-toggle-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-primary);
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+    }
+    .pin-note-btn {
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      cursor: pointer;
+      padding: 4px;
+      height: 26px;
+      width: 26px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      margin-left: 4px;
+      box-sizing: border-box;
+      opacity: 1;
+      overflow: hidden;
+    }
+    .note-tags-wrapper.collapsed .pin-note-btn {
+      width: 0;
+      padding-left: 0;
+      padding-right: 0;
+      margin-left: 0;
+      margin-right: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .tags-toggle-btn:hover, .pin-note-btn:hover {
+      color: var(--text-primary);
+    }
+    .pin-note-btn.active {
+      color: var(--text-primary);
+    }
+    .pin-note-btn .pin-fill-path {
+      display: none;
+    }
+    .pin-note-btn.active .pin-outline-path {
+      display: none;
+    }
+    .pin-note-btn.active .pin-fill-path {
+      display: inline !important;
+    }
+    .tags-toggle-btn svg {
+      transition: transform 0.3s ease;
+    }
+    .note-tags-wrapper.collapsed .tags-toggle-btn svg {
+      transform: rotate(180deg);
+    }
+    .tag-inline-autocomplete {
+      display: none;
+      position: absolute;
+      background: rgba(22, 22, 31, 0.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      z-index: 100;
+      flex-direction: column;
+      padding: 4px;
+      min-width: 150px;
+      max-height: 150px;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+    .tag-inline-item {
+      padding: 6px 10px;
+      font-size: 13px;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text-primary);
+      text-align: left;
+      transition: background 0.15s;
+    }
+    .tag-inline-item:hover, .tag-inline-item.active {
+      background: var(--accent);
+      color: #ffffff;
+    }
+    .note-tags-bar .inline-tag-input {
+      background: none;
+      border: none;
+      outline: none;
+      font-size: 14px;
+      color: var(--text-primary);
+      width: 90px;
+      padding: 2px 4px;
+      margin-left: 4px;
+      font-family: var(--font-sans);
+      border-radius: 4px;
+    }
+    .note-tags-bar .inline-tag-input:focus {
+      background: rgba(255, 255, 255, 0.05);
+    }
   </style>
 </head>
 <body>
@@ -1362,7 +1567,7 @@
   <!-- Top Navigation Header -->
   <header class="app-header">
     <button id="menu-btn" class="action-btn square-btn" title="Notas">
-      <span style="font-size: 16px; vertical-align: middle;">☰</span>
+      <span style="vertical-align: middle;">☰</span>
     </button>
     <div class="header-title-container" style="display: none;">
       <div id="note-title-display-container" class="note-title-display-container">
@@ -1394,9 +1599,6 @@
     </button>
     <button id="menu-icon-btn" class="note-menu-item">
       <span>Ícone</span>
-    </button>
-    <button id="menu-pin-note-btn" class="note-menu-item">
-      <span id="pin-note-text">Fixar Nota</span>
     </button>
     <div class="note-menu-divider"></div>
     <button id="menu-delete-note-btn" class="note-menu-item danger">
@@ -1574,13 +1776,11 @@
       <div class="modal-tab-content">
         <!-- Aba de Upload -->
         <div id="cover-upload-section" class="tab-pane active-pane">
-          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Selecione uma imagem do seu dispositivo para usar como capa:</p>
           <button id="cover-trigger-upload-btn" class="action-btn" style="width: 100%; justify-content: center; border-style: dashed; padding: 18px; font-size: 14px; border-radius: 10px; background: rgba(255,255,255,0.03);">📁 Escolher Imagem...</button>
         </div>
 
         <!-- Aba de Link -->
         <div id="cover-link-section" class="tab-pane" style="display: none; flex-direction: column; gap: 10px;">
-          <p style="font-size: 13px; color: var(--text-muted); margin: 0;">Cole a URL direta da imagem da internet:</p>
           <input type="url" id="cover-url-input" placeholder="https://exemplo.com/imagem.jpg" style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; color: var(--text-primary); outline: none; font-size: 14px;">
           <button id="cover-apply-link-btn" class="action-btn" style="align-self: flex-start; padding: 6px 14px; font-size: 13px; border-radius: 8px; margin-top: 4px;">Carregar Link</button>
         </div>
@@ -1588,7 +1788,6 @@
 
       <!-- Preview da Capa -->
       <div style="margin-top: 16px;">
-        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">Pré-visualização (Arraste para mover, use dois dedos para zoom):</p>
         <div id="cover-preview-box" class="note-cover-box" style="height: 140px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); border: 1px dashed var(--border-color); border-radius: 10px; overflow: hidden; transition: height 0.2s ease;">
           <span style="color: var(--text-muted); font-size: 13px;">Nenhuma imagem selecionada</span>
         </div>
@@ -1660,6 +1859,26 @@
     </div>
   </div>
 
+  <!-- Modal de Gerenciamento de Tags -->
+  <div id="tag-manager-modal" class="modal-overlay" style="display: none; z-index: 2200;">
+    <div class="modal-content" style="max-width: 400px; display: flex; flex-direction: column;">
+      <div class="modal-header">
+        <h2>Gerenciar Tags</h2>
+      </div>
+      <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+        <input type="text" id="new-tag-input" placeholder="Nova tag..." style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; color: var(--text-primary); outline: none; font-size: 14px;">
+        <button id="add-new-tag-btn" class="action-btn primary" style="padding: 0 16px; border-radius: 8px;">Adicionar</button>
+      </div>
+      <div style="margin-bottom: 8px; font-size: 13px; color: var(--text-muted);">Tags Existentes (Clique para alternar):</div>
+      <div id="existing-tags-container" style="display: flex; flex-wrap: wrap; gap: 8px; max-height: 150px; overflow-y: auto; padding: 8px; border: 1px solid var(--border-color); border-radius: 8px; background: rgba(0,0,0,0.1);">
+        <!-- Tags dinâmicas -->
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 16px;">
+        <button id="close-tag-modal-btn" class="action-btn primary" style="padding: 8px 16px; border-radius: 8px;">Concluído</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Controle Flutuante de Espaçamento de Linhas -->
   <div id="line-height-control-card" style="display: none; position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: rgba(22, 22, 31, 0.95); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px 24px; z-index: 300; width: calc(100% - 32px); max-width: 400px; box-shadow: 0 12px 32px rgba(0,0,0,0.6); flex-direction: column; gap: 12px; transition: all 0.3s ease;">
     <div style="display: flex; justify-content: space-between; align-items: center; user-select: none;">
@@ -1682,18 +1901,75 @@
       <!-- Modo 1: Leitura Bloqueada -->
       <div id="read-pane-wrapper" class="view-pane">
         <div id="read-cover-box" class="note-cover-box" style="display: none;"></div>
+        <div class="note-tags-wrapper">
+          <div class="note-tags-bar" data-pane="read">
+            <div class="note-tags-list"></div>
+          </div>
+          <div class="tags-actions-wrapper">
+            <button class="pin-note-btn" title="Fixar Nota">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pin-angle" viewBox="0 0 16 16" style="pointer-events: none;">
+                <path class="pin-outline-path" d="M9.828.722a.5.5 0 0 1 .354.146l4.95 4.95a.5.5 0 0 1 0 .707c-.48.48-1.072.588-1.503.588-.177 0-.335-.018-.46-.039l-3.134 3.134a6 6 0 0 1 .16 1.013c.046.702-.032 1.687-.72 2.375a.5.5 0 0 1-.707 0l-2.829-2.828-3.182 3.182c-.195.195-1.219.902-1.414.707s.512-1.22.707-1.414l3.182-3.182-2.828-2.829a.5.5 0 0 1 0-.707c.688-.688 1.673-.767 2.375-.72a6 6 0 0 1 1.013.16l3.134-3.133a3 3 0 0 1-.04-.461c0-.43.108-1.022.589-1.503a.5.5 0 0 1 .353-.146m.122 2.112v-.002zm0-.002v.002a.5.5 0 0 1-.122.51L6.293 6.878a.5.5 0 0 1-.511.12H5.78l-.014-.004a5 5 0 0 0-.288-.076 5 5 0 0 0-.765-.116c-.422-.028-.836.008-1.175.15l5.51 5.509c.141-.34.177-.753.149-1.175a5 5 0 0 0-.192-1.054l-.004-.013v-.001a.5.5 0 0 1 .12-.512l3.536-3.535a.5.5 0 0 1 .532-.115l.096.022c.087.017.208.034.344.034q.172.002.343-.04L9.927 2.028q-.042.172-.04.343a1.8 1.8 0 0 0 .062.46z"/>
+                <path class="pin-fill-path" d="M9.828.722a.5.5 0 0 1 .354.146l4.95 4.95a.5.5 0 0 1 0 .707c-.48.48-1.072.588-1.503.588-.177 0-.335-.018-.46-.039l-3.134 3.134a6 6 0 0 1 .16 1.013c.046.702-.032 1.687-.72 2.375a.5.5 0 0 1-.707 0l-2.829-2.828-3.182 3.182c-.195.195-1.219.902-1.414.707s.512-1.22.707-1.414l3.182-3.182-2.828-2.829a.5.5 0 0 1 0-.707c.688-.688 1.673-.767 2.375-.72a6 6 0 0 1 1.013.16l3.134-3.133a3 3 0 0 1-.04-.461c0-.43.108-1.022.589-1.503a.5.5 0 0 1 .353-.146"/>
+              </svg>
+            </button>
+            <button class="tags-toggle-btn" title="Expandir/Recolher Tags">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-caret-up-fill" viewBox="0 0 16 16" style="pointer-events: none;">
+                <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z"/>
+              </svg>
+            </button>
+          </div>
+          <div class="tag-inline-autocomplete" style="display: none;"></div>
+        </div>
         <div id="read-pane" class="markdown-body"></div>
       </div>
 
       <!-- Modo 2: Edição Visual -->
       <div id="edit-visual-wrapper" class="view-pane">
         <div id="edit-visual-cover-box" class="note-cover-box" style="display: none;"></div>
+        <div class="note-tags-wrapper">
+          <div class="note-tags-bar" data-pane="visual">
+            <div class="note-tags-list"></div>
+          </div>
+          <div class="tags-actions-wrapper">
+            <button class="pin-note-btn" title="Fixar Nota">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pin-angle" viewBox="0 0 16 16" style="pointer-events: none;">
+                <path class="pin-outline-path" d="M9.828.722a.5.5 0 0 1 .354.146l4.95 4.95a.5.5 0 0 1 0 .707c-.48.48-1.072.588-1.503.588-.177 0-.335-.018-.46-.039l-3.134 3.134a6 6 0 0 1 .16 1.013c.046.702-.032 1.687-.72 2.375a.5.5 0 0 1-.707 0l-2.829-2.828-3.182 3.182c-.195.195-1.219.902-1.414.707s.512-1.22.707-1.414l3.182-3.182-2.828-2.829a.5.5 0 0 1 0-.707c.688-.688 1.673-.767 2.375-.72a6 6 0 0 1 1.013.16l3.134-3.133a3 3 0 0 1-.04-.461c0-.43.108-1.022.589-1.503a.5.5 0 0 1 .353-.146m.122 2.112v-.002zm0-.002v.002a.5.5 0 0 1-.122.51L6.293 6.878a.5.5 0 0 1-.511.12H5.78l-.014-.004a5 5 0 0 0-.288-.076 5 5 0 0 0-.765-.116c-.422-.028-.836.008-1.175.15l5.51 5.509c.141-.34.177-.753.149-1.175a5 5 0 0 0-.192-1.054l-.004-.013v-.001a.5.5 0 0 1 .12-.512l3.536-3.535a.5.5 0 0 1 .532-.115l.096.022c.087.017.208.034.344.034q.172.002.343-.04L9.927 2.028q-.042.172-.04.343a1.8 1.8 0 0 0 .062.46z"/>
+                <path class="pin-fill-path" d="M9.828.722a.5.5 0 0 1 .354.146l4.95 4.95a.5.5 0 0 1 0 .707c-.48.48-1.072.588-1.503.588-.177 0-.335-.018-.46-.039l-3.134 3.134a6 6 0 0 1 .16 1.013c.046.702-.032 1.687-.72 2.375a.5.5 0 0 1-.707 0l-2.829-2.828-3.182 3.182c-.195.195-1.219.902-1.414.707s.512-1.22.707-1.414l3.182-3.182-2.828-2.829a.5.5 0 0 1 0-.707c.688-.688 1.673-.767 2.375-.72a6 6 0 0 1 1.013.16l3.134-3.133a3 3 0 0 1-.04-.461c0-.43.108-1.022.589-1.503a.5.5 0 0 1 .353-.146"/>
+              </svg>
+            </button>
+            <button class="tags-toggle-btn" title="Expandir/Recolher Tags">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-caret-up-fill" viewBox="0 0 16 16" style="pointer-events: none;">
+                <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z"/>
+              </svg>
+            </button>
+          </div>
+          <div class="tag-inline-autocomplete" style="display: none;"></div>
+        </div>
         <div id="edit-visual-pane" class="markdown-body" contenteditable="true" spellcheck="false" data-placeholder="Comece a digitar sua nota..."></div>
       </div>
 
       <!-- Modo 3: Código Raw -->
       <div id="raw-pane-wrapper" class="view-pane">
         <div id="raw-cover-box" class="note-cover-box" style="display: none;"></div>
+        <div class="note-tags-wrapper">
+          <div class="note-tags-bar" data-pane="raw">
+            <div class="note-tags-list"></div>
+          </div>
+          <div class="tags-actions-wrapper">
+            <button class="pin-note-btn" title="Fixar Nota">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pin-angle" viewBox="0 0 16 16" style="pointer-events: none;">
+                <path class="pin-outline-path" d="M9.828.722a.5.5 0 0 1 .354.146l4.95 4.95a.5.5 0 0 1 0 .707c-.48.48-1.072.588-1.503.588-.177 0-.335-.018-.46-.039l-3.134 3.134a6 6 0 0 1 .16 1.013c.046.702-.032 1.687-.72 2.375a.5.5 0 0 1-.707 0l-2.829-2.828-3.182 3.182c-.195.195-1.219.902-1.414.707s.512-1.22.707-1.414l3.182-3.182-2.828-2.829a.5.5 0 0 1 0-.707c.688-.688 1.673-.767 2.375-.72a6 6 0 0 1 1.013.16l3.134-3.133a3 3 0 0 1-.04-.461c0-.43.108-1.022.589-1.503a.5.5 0 0 1 .353-.146m.122 2.112v-.002zm0-.002v.002a.5.5 0 0 1-.122.51L6.293 6.878a.5.5 0 0 1-.511.12H5.78l-.014-.004a5 5 0 0 0-.288-.076 5 5 0 0 0-.765-.116c-.422-.028-.836.008-1.175.15l5.51 5.509c.141-.34.177-.753.149-1.175a5 5 0 0 0-.192-1.054l-.004-.013v-.001a.5.5 0 0 1 .12-.512l3.536-3.535a.5.5 0 0 1 .532-.115l.096.022c.087.017.208.034.344.034q.172.002.343-.04L9.927 2.028q-.042.172-.04.343a1.8 1.8 0 0 0 .062.46z"/>
+                <path class="pin-fill-path" d="M9.828.722a.5.5 0 0 1 .354.146l4.95 4.95a.5.5 0 0 1 0 .707c-.48.48-1.072.588-1.503.588-.177 0-.335-.018-.46-.039l-3.134 3.134a6 6 0 0 1 .16 1.013c.046.702-.032 1.687-.72 2.375a.5.5 0 0 1-.707 0l-2.829-2.828-3.182 3.182c-.195.195-1.219.902-1.414.707s.512-1.22.707-1.414l3.182-3.182-2.828-2.829a.5.5 0 0 1 0-.707c.688-.688 1.673-.767 2.375-.72a6 6 0 0 1 1.013.16l3.134-3.133a3 3 0 0 1-.04-.461c0-.43.108-1.022.589-1.503a.5.5 0 0 1 .353-.146"/>
+              </svg>
+            </button>
+            <button class="tags-toggle-btn" title="Expandir/Recolher Tags">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-caret-up-fill" viewBox="0 0 16 16" style="pointer-events: none;">
+                <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z"/>
+              </svg>
+            </button>
+          </div>
+          <div class="tag-inline-autocomplete" style="display: none;"></div>
+        </div>
         <textarea id="raw-pane" spellcheck="false" placeholder="Comece a digitar..."></textarea>
       </div>
     </div>
@@ -1903,6 +2179,7 @@
     let noteIdToDelete = null;
 
     let prefersMarkdown = false;
+    let tagsCollapsed = false;
 
     const editBtn = document.getElementById('edit-btn');
     const saveBtn = document.getElementById('save-btn');
@@ -1952,15 +2229,22 @@
 
     function extractCoverAndContent(rawContent) {
       let cover = null;
-      let pinned = false;
+      let pinned = null;
       let icon = null;
-      let coverHeight = 200;
-      let coverTransform = '';
+      let coverHeight = null;
+      let coverTransform = null;
+      let tags = null;
       let content = rawContent || '';
       
+      const tagsMatch = content.match(/^<!--TAGS:(.*?)-->\n?/);
+      if (tagsMatch) {
+        tags = tagsMatch[1] ? tagsMatch[1].split(',') : [];
+        content = content.replace(/^<!--TAGS:(.*?)-->\n?/, '');
+      }
+
       const heightMatch = content.match(/^<!--COVER_HEIGHT:(.*?)-->\n?/);
       if (heightMatch) {
-        coverHeight = parseInt(heightMatch[1], 10) || 200;
+        coverHeight = parseInt(heightMatch[1], 10) || 160;
         content = content.replace(/^<!--COVER_HEIGHT:(.*?)-->\n?/, '');
       }
 
@@ -1996,16 +2280,20 @@
 
       content = content.replace(/!\[(?:capa|cover)\]\((.*?)\)\s*\n?/gi, '');
 
-      if (cover) {
-        const escapedCover = cover.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-        const mdImageRegex = new RegExp(`\\s*!\\[.*?\\]\\(${escapedCover}\\)\\s*\\n?`, 'g');
-        content = content.replace(mdImageRegex, '');
+      if (cover && !cover.startsWith('data:')) {
+        try {
+          const escapedCover = cover.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+          const mdImageRegex = new RegExp(`\\s*!\\[.*?\\]\\(${escapedCover}\\)\\s*\\n?`, 'g');
+          content = content.replace(mdImageRegex, '');
+        } catch (e) {
+          console.warn("Falha ao remover capa via regex:", e);
+        }
       }
 
-      return { cover, pinned, icon, coverHeight, coverTransform, content };
+      return { cover, pinned, icon, coverHeight, coverTransform, tags, content };
     }
 
-    function packCoverAndContent(content, cover, pinned, icon, coverHeight = 200, coverTransform = '') {
+    function packCoverAndContent(content, cover, pinned, icon, coverHeight = 160, coverTransform = '', tags = []) {
       let meta = '';
       if (pinned) {
         meta += `<!--PINNED:true-->\n`;
@@ -2013,7 +2301,10 @@
       if (icon) {
         meta += `<!--ICON:${icon}-->\n`;
       }
-      if (coverHeight && coverHeight !== 200) {
+      if (tags && tags.length > 0) {
+        meta += `<!--TAGS:${tags.join(',')}-->\n`;
+      }
+      if (coverHeight && coverHeight !== 160) {
         meta += `<!--COVER_HEIGHT:${coverHeight}-->\n`;
       }
       if (coverTransform) {
@@ -2025,19 +2316,18 @@
       return meta + content;
     }
 
-    // Funções auxiliares de Tags & Filtragem (Pre-prontas para futura integração de layout)
-    window.extractNoteTags = function(content) {
-      if (!content) return [];
-      const matches = [...content.matchAll(/(?:^|\s)#([a-zA-Z0-9À-ÿ_-]+)/g)];
-      return [...new Set(matches.map(m => m[1].toLowerCase()))];
+    // Funções auxiliares de Tags & Filtragem
+    window.extractNoteTags = function(note) {
+      return note && note.tags ? note.tags : [];
     };
 
     window.getAllUniqueTags = function() {
       const allTags = new Set();
       if (NoteStorage && NoteStorage.notes) {
         NoteStorage.notes.forEach(note => {
-          const tags = window.extractNoteTags(note.content);
-          tags.forEach(t => allTags.add(t));
+          if (note.tags) {
+            note.tags.forEach(t => allTags.add(t.toLowerCase()));
+          }
         });
       }
       return [...allTags];
@@ -2047,8 +2337,8 @@
       if (!tag) return NoteStorage.notes || [];
       const lowerTag = tag.toLowerCase().replace(/^#/, '');
       return (NoteStorage.notes || []).filter(note => {
-        const tags = window.extractNoteTags(note.content);
-        return tags.includes(lowerTag);
+        const tags = note.tags || [];
+        return tags.some(t => t.toLowerCase() === lowerTag);
       });
     };
 
@@ -2163,11 +2453,15 @@
             const existingPinned = n.pinned;
             const existingIcon = n.icon;
             const existingTransform = n.coverTransform;
+            const existingHeight = n.coverHeight;
+            const existingTags = n.tags;
             const parsed = extractCoverAndContent(n.content);
             n.cover = parsed.cover !== null ? parsed.cover : (existingCover !== undefined ? existingCover : null);
-            n.pinned = parsed.pinned || (existingPinned === true);
+            n.pinned = parsed.pinned !== null ? parsed.pinned : (existingPinned !== undefined ? existingPinned : false);
             n.icon = parsed.icon !== null ? parsed.icon : (existingIcon !== undefined ? existingIcon : null);
             n.coverTransform = parsed.coverTransform !== null ? parsed.coverTransform : (existingTransform !== undefined ? existingTransform : '');
+            n.coverHeight = parsed.coverHeight !== null ? parsed.coverHeight : (existingHeight !== undefined ? existingHeight : 160);
+            n.tags = parsed.tags !== null ? parsed.tags : (existingTags !== undefined ? existingTags : []);
             n.content = parsed.content;
           }
         });
@@ -2214,21 +2508,22 @@
             const parsed = extractCoverAndContent(fsContent);
             const localNote = localNotes.find(n => n.id === id);
             if (!localNote) {
-              localNotes.push({ id, content: parsed.content, cover: parsed.cover, pinned: parsed.pinned, icon: parsed.icon, coverHeight: parsed.coverHeight, coverTransform: parsed.coverTransform });
+              localNotes.push({ id, content: parsed.content, cover: parsed.cover, pinned: parsed.pinned || false, icon: parsed.icon, coverHeight: parsed.coverHeight || 160, coverTransform: parsed.coverTransform || '', tags: parsed.tags || [] });
               hasChanges = true;
-            } else if (localNote.content !== parsed.content || localNote.cover !== parsed.cover || localNote.pinned !== parsed.pinned || localNote.icon !== parsed.icon || localNote.coverTransform !== parsed.coverTransform) {
+            } else if (localNote.content !== parsed.content || localNote.cover !== parsed.cover || localNote.pinned !== parsed.pinned || localNote.icon !== parsed.icon || localNote.coverTransform !== parsed.coverTransform || JSON.stringify(localNote.tags) !== JSON.stringify(parsed.tags)) {
               localNote.content = parsed.content;
               localNote.cover = parsed.cover; localNote.coverHeight = parsed.coverHeight;
               localNote.pinned = parsed.pinned;
               localNote.icon = parsed.icon;
               localNote.coverTransform = parsed.coverTransform;
+              localNote.tags = parsed.tags || [];
               hasChanges = true;
             }
           });
 
           for (const localNote of localNotes) {
             if (!fsNotesMap.has(localNote.id)) {
-              const fullContent = packCoverAndContent(localNote.content, localNote.cover, localNote.pinned, localNote.icon, localNote.coverHeight, localNote.coverTransform);
+              const fullContent = packCoverAndContent(localNote.content, localNote.cover, localNote.pinned, localNote.icon, localNote.coverHeight, localNote.coverTransform, localNote.tags || []);
               await this.saveNoteFS(localNote.id, fullContent);
             }
           }
@@ -2615,8 +2910,8 @@
         coverUrlInput.value = (tempCoverData && (tempCoverData.startsWith('http://') || tempCoverData.startsWith('https://'))) ? tempCoverData : '';
       }
       
-      updateCoverPreview();
       coverModal.style.display = 'flex';
+      updateCoverPreview();
       setTimeout(() => coverModal.classList.add('active'), 10);
     }
 
@@ -2772,7 +3067,6 @@
           const dist = Math.hypot(e.touches[1].clientX - e.touches[0].clientX, e.touches[1].clientY - e.touches[0].clientY);
           const factor = dist / touchStartDist;
           
-          // O limite inferior será policiado dinamicamente no applyConstraints()
           scale = baseScale * factor;
           applyConstraints();
           updateImgTransform();
@@ -2787,8 +3081,8 @@
       });
 
       function initScaleToFill() {
-        const containerWidth = coverPreviewBox.clientWidth;
-        const containerHeight = coverPreviewBox.clientHeight;
+        const containerWidth = coverPreviewBox.clientWidth || 340;
+        const containerHeight = coverPreviewBox.clientHeight || 140;
         const imgWidth = img.naturalWidth || containerWidth;
         const imgHeight = img.naturalHeight || containerHeight;
         const containerRatio = containerWidth / containerHeight;
@@ -2799,12 +3093,12 @@
 
         if (imgRatio > containerRatio) {
           renderedWidth = containerHeight * imgRatio;
-          scale = containerHeight / (containerWidth / imgRatio); // ou simplesmente cobrir
           scale = renderedWidth / containerWidth;
         } else {
           renderedHeight = containerWidth / imgRatio;
           scale = renderedHeight / containerHeight;
         }
+        if (isNaN(scale)) scale = 1;
         translateX = 0;
         translateY = 0;
       }
@@ -2826,8 +3120,8 @@
       }
 
       function applyConstraints() {
-        const containerWidth = coverPreviewBox.clientWidth;
-        const containerHeight = coverPreviewBox.clientHeight;
+        const containerWidth = coverPreviewBox.clientWidth || 340;
+        const containerHeight = coverPreviewBox.clientHeight || 140;
 
         const imgWidth = img.naturalWidth || containerWidth;
         const imgHeight = img.naturalHeight || containerHeight;
@@ -2846,16 +3140,9 @@
           renderedWidth = containerHeight * imgRatio;
         }
 
-        // Calcula a escala mínima necessária para cobrir 100% da área do contêiner
-        let minScale = 1;
-        if (imgRatio > containerRatio) {
-          minScale = containerHeight / renderedHeight;
-        } else {
-          minScale = containerWidth / renderedWidth;
-        }
-
-        // Impede reduzir o zoom abaixo do nível de cobertura total do contêiner
-        scale = Math.max(minScale, Math.min(scale, minScale * 5));
+        if (isNaN(scale)) scale = 1;
+        // Limita o zoom entre 1x e 5x a partir do tamanho original da imagem
+        scale = Math.max(1, Math.min(scale, 5));
 
         const finalWidth = renderedWidth * scale;
         const finalHeight = renderedHeight * scale;
@@ -2863,19 +3150,41 @@
         const maxTranslateX = Math.max(0, (finalWidth - containerWidth) / 2);
         const maxTranslateY = Math.max(0, (finalHeight - containerHeight) / 2);
 
+        if (isNaN(translateX)) translateX = 0;
+        if (isNaN(translateY)) translateY = 0;
         translateX = Math.max(-maxTranslateX, Math.min(translateX, maxTranslateX));
         translateY = Math.max(-maxTranslateY, Math.min(translateY, maxTranslateY));
       }
 
       function updateImgTransform() {
+        if (isNaN(translateX)) translateX = 0;
+        if (isNaN(translateY)) translateY = 0;
+        if (isNaN(scale)) scale = 1;
         tempCoverTransform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
         img.style.transform = tempCoverTransform;
       }
     }
 
-    if (coverTriggerUploadBtn && coverFileInput) {
-      coverTriggerUploadBtn.addEventListener('click', () => {
-        coverFileInput.click();
+    if (coverTriggerUploadBtn) {
+      coverTriggerUploadBtn.addEventListener('click', async () => {
+        if (isCapacitor && Capacitor.Plugins && Capacitor.Plugins.FilePicker) {
+          try {
+            const result = await Capacitor.Plugins.FilePicker.pickImages({
+              multiple: false,
+              readData: true
+            });
+            if (result && result.files && result.files.length > 0) {
+              const file = result.files[0];
+              tempCoverData = `data:${file.mimeType};base64,${file.data}`;
+              tempCoverTransform = ''; // Redefine para as dimensões originais sem cortes ao selecionar nova imagem
+              updateCoverPreview();
+            }
+          } catch (err) {
+            console.error("Erro ao selecionar imagem via FilePicker:", err);
+          }
+        } else if (coverFileInput) {
+          coverFileInput.click();
+        }
       });
     }
 
@@ -2955,6 +3264,222 @@
         e.stopPropagation();
         openCoverModal();
         if (noteMenuDropdown) noteMenuDropdown.classList.remove('active');
+      });
+    }
+
+    // Lógica e Cores de Gerenciamento de Tags Inline
+    const tagColorSchemes = [
+      { bg: 'rgba(13, 148, 136, 0.12)', color: 'rgb(20, 184, 166)', border: 'rgba(13, 148, 136, 0.25)' }, // Teal
+      { bg: 'rgba(79, 70, 229, 0.12)', color: 'rgb(99, 102, 241)', border: 'rgba(79, 70, 229, 0.25)' }, // Indigo (Default)
+      { bg: 'rgba(225, 29, 72, 0.12)', color: 'rgb(244, 63, 94)', border: 'rgba(225, 29, 72, 0.25)' }, // Rose
+      { bg: 'rgba(217, 119, 6, 0.12)', color: 'rgb(245, 158, 11)', border: 'rgba(217, 119, 6, 0.25)' }, // Amber
+      { bg: 'rgba(5, 150, 105, 0.12)', color: 'rgb(16, 185, 129)', border: 'rgba(5, 150, 105, 0.25)' }, // Emerald
+      { bg: 'rgba(2, 132, 199, 0.12)', color: 'rgb(14, 165, 233)', border: 'rgba(2, 132, 199, 0.25)' }, // Sky
+      { bg: 'rgba(124, 58, 237, 0.12)', color: 'rgb(139, 92, 246)', border: 'rgba(124, 58, 237, 0.25)' }, // Violet
+      { bg: 'rgba(234, 88, 12, 0.12)', color: 'rgb(249, 115, 22)', border: 'rgba(234, 88, 12, 0.25)' }, // Orange
+      { bg: 'rgba(192, 38, 211, 0.12)', color: 'rgb(217, 70, 239)', border: 'rgba(192, 38, 211, 0.25)' }, // Fuchsia
+      { bg: 'rgba(219, 39, 119, 0.12)', color: 'rgb(236, 72, 153)', border: 'rgba(219, 39, 119, 0.25)' }  // Pink
+    ];
+
+    function getTagColorScheme(tag) {
+      if (!tag) return tagColorSchemes[1];
+      let hash = 0;
+      for (let i = 0; i < tag.length; i++) {
+        hash = tag.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      const index = Math.abs(hash) % tagColorSchemes.length;
+      return tagColorSchemes[index];
+    }
+
+    function setupInlineInputLogic(input, addBtn, wrapper) {
+      const autocompleteDiv = wrapper.querySelector('.tag-inline-autocomplete');
+      if (!autocompleteDiv) return;
+
+      const showSuggestions = () => {
+        const query = input.value.trim().toLowerCase();
+        const allTags = window.getAllUniqueTags();
+        const note = NoteStorage.notes ? NoteStorage.notes.find(n => n.id === currentNoteId) : null;
+        const currentTags = note && note.tags ? note.tags.map(t => t.toLowerCase()) : [];
+        
+        const filtered = allTags.filter(t => t.includes(query) && !currentTags.includes(t));
+        
+        if (filtered.length === 0 || document.activeElement !== input) {
+          autocompleteDiv.style.display = 'none';
+          return;
+        }
+        
+        autocompleteDiv.innerHTML = '';
+        filtered.forEach(tag => {
+          const div = document.createElement('div');
+          div.className = 'tag-inline-item';
+          div.textContent = tag;
+          
+          div.onmousedown = async (e) => {
+            e.preventDefault();
+            if (note) {
+              if (!note.tags) note.tags = [];
+              note.tags.push(tag);
+              await saveNotesToStorage();
+            }
+            input.value = '';
+            autocompleteDiv.style.display = 'none';
+            renderActiveNoteTags();
+          };
+          
+          autocompleteDiv.appendChild(div);
+        });
+        
+        const rect = input.getBoundingClientRect();
+        const parentRect = wrapper.getBoundingClientRect();
+        autocompleteDiv.style.left = `${rect.left - parentRect.left}px`;
+        autocompleteDiv.style.top = `${rect.bottom - parentRect.top + 4}px`;
+        autocompleteDiv.style.display = 'flex';
+      };
+
+      input.addEventListener('input', showSuggestions);
+      input.addEventListener('focus', showSuggestions);
+      
+      input.addEventListener('blur', async () => {
+        const val = input.value.trim().toLowerCase();
+        if (val) {
+          const note = NoteStorage.notes ? NoteStorage.notes.find(n => n.id === currentNoteId) : null;
+          if (note) {
+            if (!note.tags) note.tags = [];
+            if (!note.tags.some(t => t.toLowerCase() === val)) {
+              note.tags.push(val);
+              await saveNotesToStorage();
+            }
+          }
+        }
+        input.value = '';
+        setTimeout(() => {
+          if (autocompleteDiv) autocompleteDiv.style.display = 'none';
+          renderActiveNoteTags();
+        }, 150);
+      });
+
+      input.addEventListener('keydown', async (e) => {
+        if (e.key === 'Enter' || e.key === ',') {
+          e.preventDefault();
+          const val = input.value.trim().toLowerCase();
+          if (val) {
+            const note = NoteStorage.notes ? NoteStorage.notes.find(n => n.id === currentNoteId) : null;
+            if (note) {
+              if (!note.tags) note.tags = [];
+              if (!note.tags.some(t => t.toLowerCase() === val)) {
+                note.tags.push(val);
+                await saveNotesToStorage();
+              }
+            }
+          }
+          input.value = '';
+          autocompleteDiv.style.display = 'none';
+          renderActiveNoteTags();
+        }
+      });
+    }
+
+    document.addEventListener('click', (e) => {
+      if (e.target && e.target.closest('.tags-toggle-btn')) {
+        tagsCollapsed = !tagsCollapsed;
+        updateTagsCollapseState();
+        localStore.setItem('notepad_tags_collapsed', tagsCollapsed);
+      } else if (e.target && e.target.closest('.pin-note-btn')) {
+        const note = NoteStorage.notes.find(n => n.id === currentNoteId);
+        if (note) {
+          note.pinned = !note.pinned;
+          saveNotesToStorage();
+          updateNoteMenuState(note);
+        }
+      }
+    });
+
+    function updateTagsCollapseState() {
+      const wrappers = document.querySelectorAll('.note-tags-wrapper');
+      wrappers.forEach(w => {
+        if (tagsCollapsed) {
+          w.classList.add('collapsed');
+        } else {
+          w.classList.remove('collapsed');
+        }
+      });
+    }
+
+    function renderActiveNoteTags() {
+      const note = NoteStorage.notes ? NoteStorage.notes.find(n => n.id === currentNoteId) : null;
+      const tags = note && note.tags ? note.tags : [];
+      
+      updateTagsCollapseState();
+      
+      const tagLists = document.querySelectorAll('.note-tags-list');
+      tagLists.forEach(list => {
+        list.innerHTML = '';
+        
+        tags.forEach(tag => {
+          const span = document.createElement('span');
+          span.className = 'rendered-tag';
+          span.textContent = tag;
+          
+          const scheme = getTagColorScheme(tag);
+          span.style.background = scheme.bg;
+          span.style.color = scheme.color;
+          span.style.border = `1px solid ${scheme.border}`;
+          
+          const removeX = document.createElement('span');
+          removeX.className = 'remove-tag-x';
+          removeX.innerHTML = ' &times;';
+          removeX.style.cursor = 'pointer';
+          removeX.style.marginLeft = '6px';
+          removeX.style.fontWeight = 'bold';
+          removeX.style.opacity = '0.7';
+          removeX.onclick = async (e) => {
+            e.stopPropagation();
+            if (note && note.tags) {
+              const idx = note.tags.indexOf(tag);
+              if (idx !== -1) {
+                note.tags.splice(idx, 1);
+                await saveNotesToStorage();
+              }
+            }
+          };
+          span.appendChild(removeX);
+          
+          list.appendChild(span);
+        });
+
+        // Botão de adicionar tag inline
+        const addBtn = document.createElement('button');
+        addBtn.className = 'add-tag-btn';
+        addBtn.title = 'Adicionar Tag';
+        addBtn.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;">
+            <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>
+          </svg>
+        `;
+
+        // Input de texto inline
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'inline-tag-input';
+        input.placeholder = 'Nova tag...';
+        input.style.display = 'none';
+
+        addBtn.onclick = (e) => {
+          e.stopPropagation();
+          if (tagsCollapsed) {
+            tagsCollapsed = false;
+            updateTagsCollapseState();
+            localStore.setItem('notepad_tags_collapsed', false);
+          }
+          addBtn.style.display = 'none';
+          input.style.display = 'inline-block';
+          input.focus();
+        };
+        
+        setupInlineInputLogic(input, addBtn, list.closest('.note-tags-wrapper'));
+        
+        list.appendChild(addBtn);
+        list.appendChild(input);
       });
     }
 
@@ -3054,11 +3579,13 @@
         await NoteStorage.saveNotesLS();
         if (isCapacitor) {
           for (const note of NoteStorage.notes) {
-            const packed = packCoverAndContent(note.content, note.cover, note.pinned, note.icon, note.coverHeight || 200, note.coverTransform || '');
+            const packed = packCoverAndContent(note.content, note.cover, note.pinned, note.icon, note.coverHeight || 160, note.coverTransform || '', note.tags || []);
             await NoteStorage.saveNoteFS(note.id, packed);
           }
         }
         renderNotesList();
+        // Renderiza as tags no cabeçalho
+        renderActiveNoteTags();
       } catch (err) {
         console.error('Erro ao salvar notas:', err);
       }
@@ -3067,10 +3594,13 @@
     const handleNewNote = async () => {
       try {
         let newId = Date.now().toString();
+        const lastNote = NoteStorage.notes ? NoteStorage.notes.find(n => n.id === currentNoteId) : null;
         const newNote = {
           id: newId,
           content: '',
-          cover: null
+          cover: null,
+          coverHeight: lastNote && lastNote.coverHeight ? lastNote.coverHeight : 160,
+          coverTransform: lastNote && lastNote.coverTransform ? lastNote.coverTransform : ''
         };
         if (!NoteStorage.notes) NoteStorage.notes = [];
         NoteStorage.notes.unshift(newNote);
@@ -3284,6 +3814,8 @@
       }
       const content = note ? note.content : '';
       const cover = note ? note.cover : null;
+      
+      renderActiveNoteTags();
       const formatToolbar = document.getElementById('format-toolbar');
       const titleInput = document.getElementById('note-title-input');
       const header = document.querySelector('.app-header');
@@ -3304,7 +3836,7 @@
 
       if (mode === 'read') {
         if (readCoverBox) {
-          const cHeight = (note && note.coverHeight) ? note.coverHeight : 200;
+          const cHeight = (note && note.coverHeight) ? note.coverHeight : 160;
           if (cover) {
             readCoverBox.style.height = cHeight + 'px';
             const transformStyle = note.coverTransform ? `transform: ${note.coverTransform}; transform-origin: center;` : '';
@@ -3316,9 +3848,6 @@
           }
         }
         readPane.innerHTML = content ? marked.parse(content) : '';
-        if (content) {
-          processHashtagsInDOM(readPane);
-        }
         if (readPaneWrapper) readPaneWrapper.classList.add('active');
 
         // Oculta o botão de editar se a edição com 2 cliques estiver ligada
@@ -3334,7 +3863,7 @@
 
       } else if (mode === 'visual') {
         if (editVisualCoverBox) {
-          const cHeight = (note && note.coverHeight) ? note.coverHeight : 200;
+          const cHeight = (note && note.coverHeight) ? note.coverHeight : 160;
           if (cover) {
             editVisualCoverBox.style.height = cHeight + 'px';
             const transformStyle = note.coverTransform ? `transform: ${note.coverTransform}; transform-origin: center;` : '';
@@ -3357,7 +3886,7 @@
 
       } else if (mode === 'raw') {
         if (rawCoverBox) {
-          const cHeight = (note && note.coverHeight) ? note.coverHeight : 200;
+          const cHeight = (note && note.coverHeight) ? note.coverHeight : 160;
           if (cover) {
             rawCoverBox.style.height = cHeight + 'px';
             const transformStyle = note.coverTransform ? `transform: ${note.coverTransform}; transform-origin: center;` : '';
@@ -3402,12 +3931,16 @@
       menuAddCoverBtn.style.display = 'flex';
       menuRemoveCoverBtn.style.display = 'none';
 
-
-
-      const pinTextSpan = document.getElementById('pin-note-text');
-      if (pinTextSpan) {
-        pinTextSpan.textContent = note.pinned ? 'Desafixar Nota' : 'Fixar Nota';
-      }
+      const pinBtns = document.querySelectorAll('.pin-note-btn');
+      pinBtns.forEach(btn => {
+        if (note.pinned) {
+          btn.classList.add('active');
+          btn.title = 'Desafixar Nota';
+        } else {
+          btn.classList.remove('active');
+          btn.title = 'Fixar Nota';
+        }
+      });
     }
 
     // Controle de clique e toggle do menu dropdown de 3 pontinhos
@@ -3425,18 +3958,6 @@
         noteMenuDropdown.classList.remove('active');
       }
     });
-
-    if (menuPinNoteBtn) {
-      menuPinNoteBtn.addEventListener('click', async () => {
-        const note = NoteStorage.notes.find(n => n.id === currentNoteId);
-        if (note) {
-          note.pinned = !note.pinned;
-          await saveNotesToStorage();
-          updateNoteMenuState(note);
-          if (noteMenuDropdown) noteMenuDropdown.classList.remove('active');
-        }
-      });
-    }
 
     if (menuDeleteNoteBtn) {
       menuDeleteNoteBtn.addEventListener('click', () => {
@@ -4766,6 +5287,7 @@
         doubleClickEdit = String(await localStore.getItem('notepad_double_click_edit')) === 'true';
         hideFabInNote = String(await localStore.getItem('notepad_hide_fab_in_note')) === 'true';
         prefersMarkdown = String(await localStore.getItem('notepad_prefers_markdown')) === 'true';
+        tagsCollapsed = String(await localStore.getItem('notepad_tags_collapsed')) === 'true';
         currentFontSize = parseFloat(await localStore.getItem('notepad_font_size')) || 18;
         currentLineHeight = parseFloat(await localStore.getItem('notepad_line_height')) || 1.6;
 
