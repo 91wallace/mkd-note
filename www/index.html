@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Bloco de Notas Markdown</title>
+  <title>Verbose</title>
   <link rel="manifest" href="manifest.json">
   <link rel="shortcut icon" type="image/png" href="icon-192.png">
   <meta name="theme-color" content="#0a0a0c">
@@ -59,7 +59,10 @@
       height: 100dvh;
       width: 100%;
       overflow: hidden;
-      touch-action: auto;
+      overscroll-behavior: none !important;
+      overscroll-behavior-x: none !important;
+      overscroll-behavior-y: none !important;
+      touch-action: pan-y !important;
       position: relative;
     }
 
@@ -357,7 +360,7 @@
       height: 100%;
       margin-top: 0;
       background-color: var(--bg-primary);
-      padding: 30px 10px 80px 10px;
+      padding: calc(24px + env(safe-area-inset-top, 0px)) 16px 80px 16px;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       touch-action: pan-y;
@@ -661,6 +664,33 @@
       box-shadow: 15px 0 40px rgba(0, 0, 0, 0.8);
     }
 
+    /* Right Sidebar / Aba Lateral Direita (Menu de Opções da Nota) */
+    #right-sidebar {
+      position: fixed;
+      top: 0;
+      right: 0;
+      transform: translateX(100%);
+      will-change: transform;
+      width: 270px;
+      height: 100vh;
+      height: 100dvh;
+      background: var(--bg-secondary);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-left: 1px solid var(--border-color);
+      z-index: 200;
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      padding: 24px 20px calc(24px + env(safe-area-inset-bottom)) 20px;
+      box-shadow: none;
+    }
+
+    #right-sidebar.open {
+      transform: translateX(0);
+      box-shadow: -15px 0 40px rgba(0, 0, 0, 0.8);
+    }
+
     .sidebar-brand {
       display: flex;
       justify-content: space-between;
@@ -825,6 +855,9 @@
       font-size: 14px;
       font-weight: 500;
       transition: all 0.2s ease;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
     }
 
     .note-item:hover {
@@ -880,6 +913,9 @@
       transition: all 0.2s;
       text-align: center;
       font-family: var(--font-sans);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
     }
 
     .sidebar-action-btn:hover {
@@ -1096,11 +1132,8 @@
     }
 
     .note-title-display-container {
-      display: none;
+      display: block !important;
       width: 100%;
-      overflow: hidden;
-      white-space: nowrap;
-      align-items: center;
       position: relative;
     }
     .note-title-display-text {
@@ -1123,22 +1156,28 @@
       }
     }
 
+    /* Título Posicionado Dentro do Campo de Texto (Estilo Notion / Obsidian) */
+    .note-title-content-box {
+      max-width: 800px;
+      margin: 12px auto 16px auto;
+      padding: 0;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
     .note-title-input {
       width: 100%;
       border: none;
       background: transparent;
       color: var(--text-primary);
-      font-size: 24px;
-      font-weight: 600;
+      font-size: 28px;
+      font-weight: 700;
       font-family: var(--font-sans);
       outline: none;
       padding: 0;
       margin: 0;
-      overflow: hidden;
-      text-overflow: clip;
-      white-space: nowrap;
-      mask-image: linear-gradient(to right, black calc(100% - 24px), transparent 100%);
-      -webkit-mask-image: linear-gradient(to right, black calc(100% - 24px), transparent 100%);
+      line-height: 1.25;
+      box-sizing: border-box;
     }
     .note-title-input:focus {
       border: none;
@@ -1149,9 +1188,25 @@
     }
     .note-title-input::placeholder {
       color: rgba(255, 255, 255, 0.35);
+      font-weight: 700;
     }
     .note-title-input::-webkit-input-placeholder {
       color: rgba(255, 255, 255, 0.35);
+      font-weight: 700;
+    }
+
+    .note-title-display-container {
+      width: 100%;
+      cursor: pointer;
+    }
+
+    .note-title-display-text {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.25;
+      word-break: break-word;
+      display: block;
     }
 
     /* Containers de Visualização */
@@ -1163,20 +1218,27 @@
       background-color: var(--bg-primary);
       display: flex;
       flex-direction: column;
+      overflow-x: hidden !important;
+      max-width: 100% !important;
     }
 
     .view-pane {
       width: 100%;
       height: 100%;
-      padding: 70px 10px 80px 10px;
+      padding: calc(16px + env(safe-area-inset-top, 0px)) 10px 120px 10px;
       font-size: var(--font-size);
       line-height: var(--line-height);
       overflow-y: auto;
-      touch-action: pan-y;
+      overflow-x: hidden !important;
+      overscroll-behavior: none !important;
+      overscroll-behavior-x: none !important;
+      touch-action: pan-y !important;
       border: none;
       outline: none;
       display: none;
       background-color: transparent;
+      box-sizing: border-box;
+      max-width: 100% !important;
     }
 
     .view-pane.active {
@@ -1188,6 +1250,8 @@
       background-color: var(--bg-primary);
       color: #e4e4e7;
       user-select: text;
+      padding-bottom: 60px;
+      overflow-x: hidden !important;
     }
 
     /* Modo Edição Visual */
@@ -1195,8 +1259,13 @@
       background-color: var(--bg-primary);
       color: #e4e4e7;
       min-height: 500px;
+      padding-bottom: 120px;
       outline: none;
       position: relative;
+      box-sizing: border-box;
+      overflow-x: hidden !important;
+      overscroll-behavior: none !important;
+      overscroll-behavior-x: none !important;
     }
 
     #edit-visual-pane[data-placeholder]:not(.has-content)::before {
@@ -1283,8 +1352,9 @@
     }
 
     #read-pane:empty:before {
-      content: "Nota vazia.";
-      color: var(--text-muted);
+      content: "Comece a digitar sua primeira nota aqui...";
+      color: rgba(255, 255, 255, 0.35);
+      pointer-events: none;
     }
 
     /* Modo Código Raw */
@@ -1300,7 +1370,10 @@
       word-wrap: break-word;
       border: none;
       outline: none;
-      padding: 0;
+      padding: 0 0 120px 0;
+      box-sizing: border-box;
+      overscroll-behavior: contain;
+      overscroll-behavior-y: contain;
     }
 
     #raw-pane::placeholder {
@@ -1564,46 +1637,89 @@
 </head>
 <body>
 
-  <!-- Top Navigation Header -->
-  <header class="app-header">
-    <button id="menu-btn" class="action-btn square-btn" title="Notas">
-      <span style="vertical-align: middle;">☰</span>
-    </button>
-    <div class="header-title-container" style="display: none;">
-      <div id="note-title-display-container" class="note-title-display-container">
-        <span id="note-title-display-text" class="note-title-display-text"></span>
+  <!-- Área de Conteúdo (Editor) -->
+  <div class="editor-container">
+    <div class="editor-panes-wrapper" style="position: relative; flex: 1; width: 100%; height: 100%; min-height: 0; overflow: hidden;">
+      <!-- Modo 1: Leitura Bloqueada -->
+      <div id="read-pane-wrapper" class="view-pane">
+        <div id="read-cover-box" class="note-cover-box" style="display: none;"></div>
+        <div class="note-title-content-box">
+          <div id="note-title-display-container" class="note-title-display-container">
+            <span id="note-title-display-text" class="note-title-display-text"></span>
+          </div>
+        </div>
+        <div id="read-pane" class="markdown-body"></div>
       </div>
-      <input type="text" id="note-title-input" class="note-title-input" placeholder="Título">
+
+      <!-- Modo 2: Edição Visual -->
+      <div id="edit-visual-wrapper" class="view-pane">
+        <div id="edit-visual-cover-box" class="note-cover-box" style="display: none;"></div>
+        <div class="note-title-content-box">
+          <input type="text" id="note-title-input" class="note-title-input" placeholder="Título da nota">
+        </div>
+        <div id="edit-visual-pane" class="markdown-body" contenteditable="true" spellcheck="false" data-placeholder="Comece a digitar sua primeira nota aqui..."></div>
+      </div>
+
+      <!-- Modo 3: Código Raw -->
+      <div id="raw-pane-wrapper" class="view-pane">
+        <div id="raw-cover-box" class="note-cover-box" style="display: none;"></div>
+        <div class="note-title-content-box">
+          <input type="text" id="note-title-input-raw" class="note-title-input" placeholder="Título da nota">
+        </div>
+        <textarea id="raw-pane" spellcheck="false" placeholder="Comece a digitar sua primeira nota aqui..."></textarea>
+      </div>
     </div>
-    <div class="top-actions">
-      <button id="note-menu-btn" class="action-btn square-btn" title="Mais Opções">⋮</button>
-      <button id="edit-btn" class="action-btn square-btn" title="Editar" style="display: inline-flex; align-items: center; justify-content: center;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg>
+
+    <!-- Toolbar de Formatação Rápida (Markdown Helper - Estilo Notion) -->
+    <div id="format-toolbar" class="format-toolbar">
+      <button class="format-btn" onclick="insertFormat('bold')" title="Negrito">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 12a4 4 0 0 0 0-8H6v8"/><path d="M15 20a4 4 0 0 0 0-8H6v8Z"/></svg>
       </button>
-      <button id="save-btn" class="action-btn primary square-btn" style="display: none;" title="Salvar">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      <button class="format-btn" onclick="insertFormat('italic')" title="Itálico">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" x2="10" y1="4" y2="4"/><line x1="14" x2="5" y1="20" y2="20"/><line x1="15" x2="9" y1="4" y2="20"/></svg>
+      </button>
+      <button class="format-btn" onclick="insertFormat('header')" title="Título">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="4" y1="12" y2="20"/><line x1="4" x2="4" y1="4" y2="12"/><line x1="20" x2="20" y1="12" y2="20"/><line x1="20" x2="20" y1="4" y2="12"/><line x1="4" x2="20" y1="12" y2="12"/></svg>
+      </button>
+      <button class="format-btn" onclick="insertFormat('code')" title="Código">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      </button>
+      <button class="format-btn" onclick="insertFormat('quote')" title="Citação">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3a4 4 0 0 0-4 4v3a3 3 0 0 0 3 3h3a1 1 0 0 0 1-1V7a4 4 0 0 0-4-4Z"/><path d="M6 3a4 4 0 0 0-4 4v3a3 3 0 0 0 3 3h3a1 1 0 0 0 1-1V7a4 4 0 0 0-4-4Z"/></svg>
+      </button>
+      <button class="format-btn" onclick="insertFormat('list')" title="Lista">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
       </button>
     </div>
-  </header>
+  </div>
 
   <!-- Input de arquivo invisível para Capa -->
   <input type="file" id="cover-file-input" accept="image/*" style="display: none;">
 
-  <!-- Menu Dropdown da Nota (3 pontinhos) -->
-  <div id="note-menu-dropdown" class="note-menu-dropdown">
-    <button id="menu-add-cover-btn" class="note-menu-item">
-      <span id="add-cover-text">Capa</span>
-    </button>
-    <button id="menu-remove-cover-btn" class="note-menu-item" style="display: none;">
-      <span>Remover Capa</span>
-    </button>
-    <button id="menu-icon-btn" class="note-menu-item">
-      <span>Ícone</span>
-    </button>
-    <div class="note-menu-divider"></div>
-    <button id="menu-delete-note-btn" class="note-menu-item danger">
-      <span>Excluir</span>
-    </button>
+  <!-- Right Sidebar / Aba Lateral Direita (Menu de Opções da Nota) -->
+  <div id="right-sidebar">
+    <div class="sidebar-brand" style="margin-bottom: 16px;">
+      <span class="sidebar-title" style="font-size: 16px; font-weight: 600; color: var(--text-primary);">Opções da Nota</span>
+      <button id="close-right-sidebar-btn" class="close-btn" style="background: none; border: none; color: var(--text-muted); font-size: 24px; cursor: pointer; padding: 0 4px;">&times;</button>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px; flex: 1;">
+      <button id="menu-add-cover-btn" class="note-menu-item" style="padding: 12px 14px; border-radius: 10px; font-size: 15px;">
+        <span id="add-cover-text">Capa</span>
+      </button>
+      <button id="menu-remove-cover-btn" class="note-menu-item" style="display: none; padding: 12px 14px; border-radius: 10px; font-size: 15px;">
+        <span>Remover Capa</span>
+      </button>
+      <button id="menu-icon-btn" class="note-menu-item" style="padding: 12px 14px; border-radius: 10px; font-size: 15px;">
+        <span>Ícone</span>
+      </button>
+      <button id="menu-pin-note-btn" class="note-menu-item" style="padding: 12px 14px; border-radius: 10px; font-size: 15px;">
+        <span id="menu-pin-note-text">Fixar Nota</span>
+      </button>
+      <div class="note-menu-divider" style="margin: 8px 0; border-top: 1px solid var(--border-color);"></div>
+      <button id="menu-delete-note-btn" class="note-menu-item danger" style="padding: 12px 14px; border-radius: 10px; font-size: 15px;">
+        <span>Excluir</span>
+      </button>
+    </div>
   </div>
 
   <!-- Botão Flutuante (FAB) Nova Nota -->
@@ -1697,7 +1813,7 @@
     <!-- Barra Flutuante de Instalação PWA (Aparece apenas quando Preferências está aberta) -->
     <div id="pwa-install-banner" style="display: none; position: absolute; bottom: calc(48px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); background: rgba(22, 22, 31, 0.95); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--border-color); border-radius: 16px; padding: 14px 20px; z-index: 500; width: calc(100% - 32px); max-width: 420px; box-shadow: 0 12px 32px rgba(0,0,0,0.6); align-items: center; justify-content: space-between; gap: 16px; animation: slideUp 0.3s ease-out;">
       <div style="flex: 1;">
-        <div style="font-weight: 600; font-size: 14px; color: var(--text-primary);">Instalar Bloco de Notas</div>
+        <div style="font-weight: 600; font-size: 14px; color: var(--text-primary);">Instalar Verbose</div>
         <div style="font-size: 12px; color: var(--text-muted); margin-top: 1px;">Use offline e acesse rápido.</div>
       </div>
       <div style="display: flex; gap: 12px; align-items: center;">
@@ -1895,114 +2011,17 @@
     </div>
   </div>
 
-  <!-- Área de Conteúdo (Editor) -->
-  <div class="editor-container">
-    <div class="editor-panes-wrapper" style="position: relative; flex: 1; width: 100%; height: 100%; min-height: 0; overflow: hidden;">
-      <!-- Modo 1: Leitura Bloqueada -->
-      <div id="read-pane-wrapper" class="view-pane">
-        <div id="read-cover-box" class="note-cover-box" style="display: none;"></div>
-        <div class="note-tags-wrapper">
-          <div class="note-tags-bar" data-pane="read">
-            <div class="note-tags-list"></div>
-          </div>
-          <div class="tags-actions-wrapper">
-            <button class="pin-note-btn" title="Fixar Nota">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pin-angle" viewBox="0 0 16 16" style="pointer-events: none;">
-                <path class="pin-outline-path" d="M9.828.722a.5.5 0 0 1 .354.146l4.95 4.95a.5.5 0 0 1 0 .707c-.48.48-1.072.588-1.503.588-.177 0-.335-.018-.46-.039l-3.134 3.134a6 6 0 0 1 .16 1.013c.046.702-.032 1.687-.72 2.375a.5.5 0 0 1-.707 0l-2.829-2.828-3.182 3.182c-.195.195-1.219.902-1.414.707s.512-1.22.707-1.414l3.182-3.182-2.828-2.829a.5.5 0 0 1 0-.707c.688-.688 1.673-.767 2.375-.72a6 6 0 0 1 1.013.16l3.134-3.133a3 3 0 0 1-.04-.461c0-.43.108-1.022.589-1.503a.5.5 0 0 1 .353-.146m.122 2.112v-.002zm0-.002v.002a.5.5 0 0 1-.122.51L6.293 6.878a.5.5 0 0 1-.511.12H5.78l-.014-.004a5 5 0 0 0-.288-.076 5 5 0 0 0-.765-.116c-.422-.028-.836.008-1.175.15l5.51 5.509c.141-.34.177-.753.149-1.175a5 5 0 0 0-.192-1.054l-.004-.013v-.001a.5.5 0 0 1 .12-.512l3.536-3.535a.5.5 0 0 1 .532-.115l.096.022c.087.017.208.034.344.034q.172.002.343-.04L9.927 2.028q-.042.172-.04.343a1.8 1.8 0 0 0 .062.46z"/>
-                <path class="pin-fill-path" d="M9.828.722a.5.5 0 0 1 .354.146l4.95 4.95a.5.5 0 0 1 0 .707c-.48.48-1.072.588-1.503.588-.177 0-.335-.018-.46-.039l-3.134 3.134a6 6 0 0 1 .16 1.013c.046.702-.032 1.687-.72 2.375a.5.5 0 0 1-.707 0l-2.829-2.828-3.182 3.182c-.195.195-1.219.902-1.414.707s.512-1.22.707-1.414l3.182-3.182-2.828-2.829a.5.5 0 0 1 0-.707c.688-.688 1.673-.767 2.375-.72a6 6 0 0 1 1.013.16l3.134-3.133a3 3 0 0 1-.04-.461c0-.43.108-1.022.589-1.503a.5.5 0 0 1 .353-.146"/>
-              </svg>
-            </button>
-            <button class="tags-toggle-btn" title="Expandir/Recolher Tags">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-caret-up-fill" viewBox="0 0 16 16" style="pointer-events: none;">
-                <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z"/>
-              </svg>
-            </button>
-          </div>
-          <div class="tag-inline-autocomplete" style="display: none;"></div>
-        </div>
-        <div id="read-pane" class="markdown-body"></div>
-      </div>
-
-      <!-- Modo 2: Edição Visual -->
-      <div id="edit-visual-wrapper" class="view-pane">
-        <div id="edit-visual-cover-box" class="note-cover-box" style="display: none;"></div>
-        <div class="note-tags-wrapper">
-          <div class="note-tags-bar" data-pane="visual">
-            <div class="note-tags-list"></div>
-          </div>
-          <div class="tags-actions-wrapper">
-            <button class="pin-note-btn" title="Fixar Nota">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pin-angle" viewBox="0 0 16 16" style="pointer-events: none;">
-                <path class="pin-outline-path" d="M9.828.722a.5.5 0 0 1 .354.146l4.95 4.95a.5.5 0 0 1 0 .707c-.48.48-1.072.588-1.503.588-.177 0-.335-.018-.46-.039l-3.134 3.134a6 6 0 0 1 .16 1.013c.046.702-.032 1.687-.72 2.375a.5.5 0 0 1-.707 0l-2.829-2.828-3.182 3.182c-.195.195-1.219.902-1.414.707s.512-1.22.707-1.414l3.182-3.182-2.828-2.829a.5.5 0 0 1 0-.707c.688-.688 1.673-.767 2.375-.72a6 6 0 0 1 1.013.16l3.134-3.133a3 3 0 0 1-.04-.461c0-.43.108-1.022.589-1.503a.5.5 0 0 1 .353-.146m.122 2.112v-.002zm0-.002v.002a.5.5 0 0 1-.122.51L6.293 6.878a.5.5 0 0 1-.511.12H5.78l-.014-.004a5 5 0 0 0-.288-.076 5 5 0 0 0-.765-.116c-.422-.028-.836.008-1.175.15l5.51 5.509c.141-.34.177-.753.149-1.175a5 5 0 0 0-.192-1.054l-.004-.013v-.001a.5.5 0 0 1 .12-.512l3.536-3.535a.5.5 0 0 1 .532-.115l.096.022c.087.017.208.034.344.034q.172.002.343-.04L9.927 2.028q-.042.172-.04.343a1.8 1.8 0 0 0 .062.46z"/>
-                <path class="pin-fill-path" d="M9.828.722a.5.5 0 0 1 .354.146l4.95 4.95a.5.5 0 0 1 0 .707c-.48.48-1.072.588-1.503.588-.177 0-.335-.018-.46-.039l-3.134 3.134a6 6 0 0 1 .16 1.013c.046.702-.032 1.687-.72 2.375a.5.5 0 0 1-.707 0l-2.829-2.828-3.182 3.182c-.195.195-1.219.902-1.414.707s.512-1.22.707-1.414l3.182-3.182-2.828-2.829a.5.5 0 0 1 0-.707c.688-.688 1.673-.767 2.375-.72a6 6 0 0 1 1.013.16l3.134-3.133a3 3 0 0 1-.04-.461c0-.43.108-1.022.589-1.503a.5.5 0 0 1 .353-.146"/>
-              </svg>
-            </button>
-            <button class="tags-toggle-btn" title="Expandir/Recolher Tags">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-caret-up-fill" viewBox="0 0 16 16" style="pointer-events: none;">
-                <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z"/>
-              </svg>
-            </button>
-          </div>
-          <div class="tag-inline-autocomplete" style="display: none;"></div>
-        </div>
-        <div id="edit-visual-pane" class="markdown-body" contenteditable="true" spellcheck="false" data-placeholder="Comece a digitar sua nota..."></div>
-      </div>
-
-      <!-- Modo 3: Código Raw -->
-      <div id="raw-pane-wrapper" class="view-pane">
-        <div id="raw-cover-box" class="note-cover-box" style="display: none;"></div>
-        <div class="note-tags-wrapper">
-          <div class="note-tags-bar" data-pane="raw">
-            <div class="note-tags-list"></div>
-          </div>
-          <div class="tags-actions-wrapper">
-            <button class="pin-note-btn" title="Fixar Nota">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pin-angle" viewBox="0 0 16 16" style="pointer-events: none;">
-                <path class="pin-outline-path" d="M9.828.722a.5.5 0 0 1 .354.146l4.95 4.95a.5.5 0 0 1 0 .707c-.48.48-1.072.588-1.503.588-.177 0-.335-.018-.46-.039l-3.134 3.134a6 6 0 0 1 .16 1.013c.046.702-.032 1.687-.72 2.375a.5.5 0 0 1-.707 0l-2.829-2.828-3.182 3.182c-.195.195-1.219.902-1.414.707s.512-1.22.707-1.414l3.182-3.182-2.828-2.829a.5.5 0 0 1 0-.707c.688-.688 1.673-.767 2.375-.72a6 6 0 0 1 1.013.16l3.134-3.133a3 3 0 0 1-.04-.461c0-.43.108-1.022.589-1.503a.5.5 0 0 1 .353-.146m.122 2.112v-.002zm0-.002v.002a.5.5 0 0 1-.122.51L6.293 6.878a.5.5 0 0 1-.511.12H5.78l-.014-.004a5 5 0 0 0-.288-.076 5 5 0 0 0-.765-.116c-.422-.028-.836.008-1.175.15l5.51 5.509c.141-.34.177-.753.149-1.175a5 5 0 0 0-.192-1.054l-.004-.013v-.001a.5.5 0 0 1 .12-.512l3.536-3.535a.5.5 0 0 1 .532-.115l.096.022c.087.017.208.034.344.034q.172.002.343-.04L9.927 2.028q-.042.172-.04.343a1.8 1.8 0 0 0 .062.46z"/>
-                <path class="pin-fill-path" d="M9.828.722a.5.5 0 0 1 .354.146l4.95 4.95a.5.5 0 0 1 0 .707c-.48.48-1.072.588-1.503.588-.177 0-.335-.018-.46-.039l-3.134 3.134a6 6 0 0 1 .16 1.013c.046.702-.032 1.687-.72 2.375a.5.5 0 0 1-.707 0l-2.829-2.828-3.182 3.182c-.195.195-1.219.902-1.414.707s.512-1.22.707-1.414l3.182-3.182-2.828-2.829a.5.5 0 0 1 0-.707c.688-.688 1.673-.767 2.375-.72a6 6 0 0 1 1.013.16l3.134-3.133a3 3 0 0 1-.04-.461c0-.43.108-1.022.589-1.503a.5.5 0 0 1 .353-.146"/>
-              </svg>
-            </button>
-            <button class="tags-toggle-btn" title="Expandir/Recolher Tags">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-caret-up-fill" viewBox="0 0 16 16" style="pointer-events: none;">
-                <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z"/>
-              </svg>
-            </button>
-          </div>
-          <div class="tag-inline-autocomplete" style="display: none;"></div>
-        </div>
-        <textarea id="raw-pane" spellcheck="false" placeholder="Comece a digitar..."></textarea>
-      </div>
-    </div>
-
-    <!-- Toolbar de Formatação Rápida (Markdown Helper - Estilo Notion) -->
-    <div id="format-toolbar" class="format-toolbar">
-      <button class="format-btn" onclick="insertFormat('bold')" title="Negrito">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 12a4 4 0 0 0 0-8H6v8"/><path d="M15 20a4 4 0 0 0 0-8H6v8Z"/></svg>
-      </button>
-      <button class="format-btn" onclick="insertFormat('italic')" title="Itálico">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" x2="10" y1="4" y2="4"/><line x1="14" x2="5" y1="20" y2="20"/><line x1="15" x2="9" y1="4" y2="20"/></svg>
-      </button>
-      <button class="format-btn" onclick="insertFormat('header')" title="Título">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="4" y1="12" y2="20"/><line x1="4" x2="4" y1="4" y2="12"/><line x1="20" x2="20" y1="12" y2="20"/><line x1="20" x2="20" y1="4" y2="12"/><line x1="4" x2="20" y1="12" y2="12"/></svg>
-      </button>
-      <button class="format-btn" onclick="insertFormat('code')" title="Código">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-      </button>
-      <button class="format-btn" onclick="insertFormat('quote')" title="Citação">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3a4 4 0 0 0-4 4v3a3 3 0 0 0 3 3h3a1 1 0 0 0 1-1V7a4 4 0 0 0-4-4Z"/><path d="M6 3a4 4 0 0 0-4 4v3a3 3 0 0 0 3 3h3a1 1 0 0 0 1-1V7a4 4 0 0 0-4-4Z"/></svg>
-      </button>
-      <button class="format-btn" onclick="insertFormat('list')" title="Lista">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
-      </button>
-    </div>
-  </div>
-
   <!-- Área do Dashboard -->
   <div id="dashboard-pane" class="dashboard-pane" style="display: none;">
     <div class="dashboard-content">
 
+      <!-- Dashboard Header -->
+      <div class="dashboard-header" style="margin-bottom: 24px;">
+        <div class="dashboard-title">Verbose</div>
+      </div>
+
       <!-- Section 1: Recent Notes (Horizontal Scroll Cards) -->
-      <section class="dashboard-section" style="margin-top: 24px;">
+      <section class="dashboard-section" style="margin-top: 16px;">
         <div class="section-header">
           <h2>Recentes</h2>
           <button id="dash-see-all-btn" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 14px; font-weight: 500; font-family: var(--font-sans); display: none;">See all</button>
@@ -2012,10 +2031,10 @@
         </div>
       </section>
 
-      <!-- Section 2: Pinned Notes List -->
+      <!-- Section 2: Pinned / All Notes List -->
       <section class="dashboard-section" style="margin-top: 24px;">
         <div class="section-header">
-          <h2>Fixados</h2>
+          <h2 id="dashboard-list-section-title">Fixados</h2>
         </div>
         <div class="pinned-list-container" id="dashboard-notes-list">
           <!-- Renderizado Dinamicamente -->
@@ -2448,6 +2467,9 @@
         this.notes = await localStore.getAllNotes();
         
         this.notes.forEach(n => {
+          if (n.content === 'Comece a digitar sua primeira nota aqui...') {
+            n.content = '';
+          }
           if (n.content) {
             const existingCover = n.cover;
             const existingPinned = n.pinned;
@@ -2462,14 +2484,14 @@
             n.coverTransform = parsed.coverTransform !== null ? parsed.coverTransform : (existingTransform !== undefined ? existingTransform : '');
             n.coverHeight = parsed.coverHeight !== null ? parsed.coverHeight : (existingHeight !== undefined ? existingHeight : 160);
             n.tags = parsed.tags !== null ? parsed.tags : (existingTags !== undefined ? existingTags : []);
-            n.content = parsed.content;
+            n.content = parsed.content === 'Comece a digitar sua primeira nota aqui...' ? '' : parsed.content;
           }
         });
 
         if (this.notes.length === 0) {
           this.notes = [{
             id: 'Minhas Notas',
-            content: 'Comece a digitar sua primeira nota aqui...',
+            content: '',
             cover: null,
             pinned: false,
             icon: null
@@ -2662,15 +2684,7 @@
       activeView = 'dashboard';
       const editorContainer = document.querySelector('.editor-container');
       const dashboardPane = document.getElementById('dashboard-pane');
-      const titleContainer = document.querySelector('.header-title-container');
-      const header = document.querySelector('.app-header');
 
-      if (header) header.style.display = 'none';
-      try {
-        updateHeaderBackground();
-      } catch (err) {
-        console.error("Erro ao atualizar fundo do header no dashboard:", err);
-      }
       if (editorContainer) editorContainer.style.display = 'none';
       if (dashboardPane) {
         try {
@@ -2680,10 +2694,6 @@
         }
         dashboardPane.style.display = 'block';
       }
-      if (titleContainer) titleContainer.style.display = 'none';
-      if (editBtn) editBtn.style.display = 'none';
-      if (saveBtn) saveBtn.style.display = 'none';
-      if (noteMenuBtn) noteMenuBtn.style.display = 'none';
       updateFabVisibility();
       closeSidebar();
     }
@@ -2692,15 +2702,9 @@
       activeView = 'editor';
       const editorContainer = document.querySelector('.editor-container');
       const dashboardPane = document.getElementById('dashboard-pane');
-      const titleContainer = document.querySelector('.header-title-container');
-      const header = document.querySelector('.app-header');
 
-      if (header) header.style.display = 'flex';
       if (dashboardPane) dashboardPane.style.display = 'none';
       if (editorContainer) editorContainer.style.display = 'flex';
-      if (titleContainer) titleContainer.style.display = 'flex';
-      if (noteMenuBtn) noteMenuBtn.style.display = 'block';
-      if (menuBtn) menuBtn.style.display = 'flex';
       updateFabVisibility();
     }
 
@@ -2743,7 +2747,7 @@
         const recentNotes = notes.slice(0, 10);
 
         if (recentNotes.length === 0) {
-          recentCardsContainer.innerHTML = `<p style="color: var(--text-muted); font-size: 14px; padding: 10px;">Nenhuma nota encontrada.</p>`;
+          recentCardsContainer.innerHTML = `<p style="color: var(--text-muted); font-size: 14px; padding: 12px;">Nenhuma nota encontrada.</p>`;
         } else {
           recentNotes.forEach(note => {
             const title = getNoteDisplayTitle(note);
@@ -2798,16 +2802,23 @@
         };
       }
 
-      // Renderizar Lista Vertical de Notas (Estilo Pinned/List do Screenshot)
+      // Renderizar Lista Vertical de Notas (Fixadas ou Todas as Notas se não houver fixadas)
       const dashNotesList = document.getElementById('dashboard-notes-list');
+      const listSectionTitle = document.getElementById('dashboard-list-section-title');
+
       if (dashNotesList) {
         dashNotesList.innerHTML = '';
         const pinnedNotes = notes.filter(n => n.pinned === true);
+        const displayList = pinnedNotes.length > 0 ? pinnedNotes : notes;
 
-        if (pinnedNotes.length === 0) {
-          dashNotesList.innerHTML = `<div class="dash-list-item" style="cursor: default;"><span style="color: var(--text-muted);">Nenhuma nota fixada. Marque "Fixar Nota" no menu de opções.</span></div>`;
+        if (listSectionTitle) {
+          listSectionTitle.textContent = pinnedNotes.length > 0 ? 'Fixados' : 'Todas as Notas';
+        }
+
+        if (displayList.length === 0) {
+          dashNotesList.innerHTML = `<div class="dash-list-item" style="cursor: default;"><span style="color: var(--text-muted);">Nenhuma nota encontrada. Crie sua primeira nota!</span></div>`;
         } else {
-          pinnedNotes.forEach(note => {
+          displayList.forEach(note => {
             const title = getNoteDisplayTitle(note);
             const timeMeta = formatRelativeTime(note.id);
             const item = document.createElement('div');
@@ -2842,22 +2853,114 @@
       }
     }
 
-    // Sidebar close
-    overlay.addEventListener('click', closeSidebar);
+    const rightSidebar = document.getElementById('right-sidebar');
+    const closeRightSidebarBtn = document.getElementById('close-right-sidebar-btn');
 
-    menuBtn.addEventListener('click', () => {
-      const opening = !sidebar.classList.contains('open');
-      sidebar.classList.toggle('open');
-      overlay.classList.toggle('active');
-      if (opening) {
+    function openSidebar() {
+      try {
+        if (typeof finishEditing === 'function') finishEditing();
+      } catch (e) {
+        console.error(e);
+      }
+      const activeModal = document.querySelector('.modal-overlay.active, .modal-overlay[style*="display: flex"], .modal-overlay[style*="display: block"]');
+      if (!activeModal && sidebar && !sidebar.classList.contains('open')) {
+        sidebar.classList.add('open');
+        if (overlay) overlay.classList.add('active');
         renderNotesList();
       }
-    });
+    }
+
+    function openRightSidebar() {
+      try {
+        if (typeof finishEditing === 'function') finishEditing();
+      } catch (e) {
+        console.error(e);
+      }
+      const activeModal = document.querySelector('.modal-overlay.active, .modal-overlay[style*="display: flex"], .modal-overlay[style*="display: block"]');
+      if (!activeModal && rightSidebar && !rightSidebar.classList.contains('open')) {
+        const note = NoteStorage.notes ? NoteStorage.notes.find(n => n.id === currentNoteId) : null;
+        if (note) updateNoteMenuState(note);
+        rightSidebar.classList.add('open');
+        if (overlay) overlay.classList.add('active');
+      }
+    }
+
+    function closeRightSidebar() {
+      if (rightSidebar) rightSidebar.classList.remove('open');
+      if (overlay && (!sidebar || !sidebar.classList.contains('open'))) {
+        overlay.classList.remove('active');
+      }
+    }
 
     function closeSidebar() {
-      sidebar.classList.remove('open');
-      overlay.classList.remove('active');
+      if (sidebar) sidebar.classList.remove('open');
+      closeRightSidebar();
+      if (overlay) overlay.classList.remove('active');
     }
+
+    overlay.addEventListener('click', closeSidebar);
+    if (closeRightSidebarBtn) closeRightSidebarBtn.addEventListener('click', closeRightSidebar);
+
+    if (menuBtn) {
+      menuBtn.addEventListener('click', () => {
+        const opening = !sidebar.classList.contains('open');
+        if (opening) {
+          openSidebar();
+        } else {
+          closeSidebar();
+        }
+      });
+    }
+
+    // Gesto de Deslizar (Swipe) para abrir/fechar as barras laterais esquerda e direita
+    let sidebarTouchStartX = 0;
+    let sidebarTouchStartY = 0;
+    let isInteractingWithCoverOrControl = false;
+
+    document.addEventListener('touchstart', (e) => {
+      // Bloqueia a abertura das sidebars se estiver dimensionando a capa, interagindo com sliders ou modais
+      if (
+        (e.target && e.target.closest && (e.target.closest('.note-cover-box') || e.target.closest('input[type="range"]') || e.target.closest('.modal-overlay'))) ||
+        (e.touches && e.touches.length > 1)
+      ) {
+        isInteractingWithCoverOrControl = true;
+        return;
+      }
+      isInteractingWithCoverOrControl = false;
+
+      if (e.touches && e.touches.length === 1) {
+        sidebarTouchStartX = e.touches[0].clientX;
+        sidebarTouchStartY = e.touches[0].clientY;
+      }
+    }, { passive: true });
+
+    document.addEventListener('touchend', (e) => {
+      if (isInteractingWithCoverOrControl) {
+        isInteractingWithCoverOrControl = false;
+        return;
+      }
+      if (e.changedTouches && e.changedTouches.length === 1) {
+        const deltaX = e.changedTouches[0].clientX - sidebarTouchStartX;
+        const deltaY = Math.abs(e.changedTouches[0].clientY - sidebarTouchStartY);
+
+        // Deslize da esquerda para a direita (abrir sidebar esquerda ou fechar sidebar direita)
+        if (deltaX > 60 && deltaX > deltaY * 1.5) {
+          if (rightSidebar && rightSidebar.classList.contains('open')) {
+            closeRightSidebar();
+          } else {
+            openSidebar();
+          }
+        } 
+        // Deslize da direita para a esquerda (abrir sidebar direita / menu de opções da nota ou fechar sidebar esquerda)
+        else if (deltaX < -60 && Math.abs(deltaX) > deltaY * 1.5) {
+          if (sidebar && sidebar.classList.contains('open')) {
+            closeSidebar();
+          } else {
+            openRightSidebar();
+          }
+        }
+      }
+    }, { passive: true });
 
     function getNoteDisplayTitle(note) {
       if (!note) return 'Nova Nota';
@@ -3263,7 +3366,7 @@
       menuAddCoverBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         openCoverModal();
-        if (noteMenuDropdown) noteMenuDropdown.classList.remove('active');
+        closeRightSidebar();
       });
     }
 
@@ -3384,13 +3487,6 @@
         tagsCollapsed = !tagsCollapsed;
         updateTagsCollapseState();
         localStore.setItem('notepad_tags_collapsed', tagsCollapsed);
-      } else if (e.target && e.target.closest('.pin-note-btn')) {
-        const note = NoteStorage.notes.find(n => n.id === currentNoteId);
-        if (note) {
-          note.pinned = !note.pinned;
-          saveNotesToStorage();
-          updateNoteMenuState(note);
-        }
       }
     });
 
@@ -3766,41 +3862,31 @@
 
     function updateHeaderTitleDisplay(note) {
       const titleInput = document.getElementById('note-title-input');
-      const titleDisplayContainer = document.getElementById('note-title-display-container');
+      const titleInputRaw = document.getElementById('note-title-input-raw');
       const titleDisplayText = document.getElementById('note-title-display-text');
-      if (!titleInput || !titleDisplayContainer || !titleDisplayText) return;
 
       const title = getNoteDisplayTitle(note);
-
-      // Atualiza o valor no input de edição
       const isTimestamp = note ? /^\d{13}$/.test(note.id) : false;
-      titleInput.value = isTimestamp ? '' : (note ? note.id : '');
+      const isUntitled = isTimestamp || !title || title === 'Nova Nota' || title === 'Título da nota';
 
-      // Atualiza o texto na visualização estática
-      titleDisplayText.textContent = title || 'Sem Título';
+      const val = isUntitled ? '' : title;
+      if (titleInput) {
+        titleInput.placeholder = "Título da nota";
+        titleInput.value = val;
+      }
+      if (titleInputRaw) {
+        titleInputRaw.placeholder = "Título da nota";
+        titleInputRaw.value = val;
+      }
 
-      // Reseta classes e propriedades de animação
-      titleDisplayText.classList.remove('animate-marquee');
-      titleDisplayText.style.removeProperty('--scroll-dist');
-
-      if (currentMode === 'read') {
-        titleInput.style.display = 'none';
-        titleDisplayContainer.style.display = 'flex';
-
-        // Executa a medição após renderização
-        setTimeout(() => {
-          const containerWidth = titleDisplayContainer.clientWidth;
-          const textWidth = titleDisplayText.scrollWidth;
-          if (textWidth > containerWidth && containerWidth > 0) {
-            const scrollDist = textWidth - containerWidth;
-            // Define o deslocamento exato para a animação
-            titleDisplayText.style.setProperty('--scroll-dist', `-${scrollDist + 16}px`);
-            titleDisplayText.classList.add('animate-marquee');
-          }
-        }, 150);
-      } else {
-        titleInput.style.display = 'block';
-        titleDisplayContainer.style.display = 'none';
+      if (titleDisplayText) {
+        if (isUntitled) {
+          titleDisplayText.textContent = 'Título da nota';
+          titleDisplayText.style.color = 'rgba(255, 255, 255, 0.35)';
+        } else {
+          titleDisplayText.textContent = title;
+          titleDisplayText.style.color = 'var(--text-primary)';
+        }
       }
     }
 
@@ -3830,6 +3916,10 @@
 
       updateHeaderTitleDisplay(note);
 
+      if ((mode === 'visual' || mode === 'raw') && (!history.state || !history.state.editingNote)) {
+        history.pushState({ editingNote: true }, '');
+      }
+
       if (readPaneWrapper) readPaneWrapper.classList.remove('active');
       if (editVisualWrapper) editVisualWrapper.classList.remove('active');
       if (rawPaneWrapper) rawPaneWrapper.classList.remove('active');
@@ -3850,9 +3940,8 @@
         readPane.innerHTML = content ? marked.parse(content) : '';
         if (readPaneWrapper) readPaneWrapper.classList.add('active');
 
-        // Oculta o botão de editar se a edição com 2 cliques estiver ligada
-        editBtn.style.display = doubleClickEdit ? 'none' : 'block';
-        saveBtn.style.display = 'none';
+        if (editBtn) editBtn.style.display = doubleClickEdit ? 'none' : 'block';
+        if (saveBtn) saveBtn.style.display = 'none';
         if (formatToolbar) formatToolbar.classList.remove('visible');
 
         // Limpa o timer de salvamento automático ao entrar no modo leitura
@@ -3878,8 +3967,8 @@
         if (editVisualWrapper) editVisualWrapper.classList.add('active');
         updateVisualPanePlaceholder();
 
-        editBtn.style.display = 'none';
-        saveBtn.style.display = 'block';
+        if (editBtn) editBtn.style.display = 'none';
+        if (saveBtn) saveBtn.style.display = 'block';
         editVisualPane.focus();
         if (formatToolbar) formatToolbar.classList.add('visible');
         resetAutoSaveTimer();
@@ -3908,8 +3997,8 @@
         rawPane.value = content;
         if (rawPaneWrapper) rawPaneWrapper.classList.add('active');
 
-        editBtn.style.display = 'none';
-        saveBtn.style.display = 'block';
+        if (editBtn) editBtn.style.display = 'none';
+        if (saveBtn) saveBtn.style.display = 'block';
         rawPane.focus();
         if (formatToolbar) formatToolbar.classList.add('visible');
         resetAutoSaveTimer();
@@ -3931,46 +4020,34 @@
       menuAddCoverBtn.style.display = 'flex';
       menuRemoveCoverBtn.style.display = 'none';
 
-      const pinBtns = document.querySelectorAll('.pin-note-btn');
-      pinBtns.forEach(btn => {
-        if (note.pinned) {
-          btn.classList.add('active');
-          btn.title = 'Desafixar Nota';
-        } else {
-          btn.classList.remove('active');
-          btn.title = 'Fixar Nota';
-        }
-      });
-    }
-
-    // Controle de clique e toggle do menu dropdown de 3 pontinhos
-    if (noteMenuBtn) {
-      noteMenuBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (noteMenuDropdown) {
-          noteMenuDropdown.classList.toggle('active');
-        }
-      });
-    }
-
-    document.addEventListener('click', (e) => {
-      if (noteMenuDropdown && !noteMenuDropdown.contains(e.target) && e.target !== noteMenuBtn) {
-        noteMenuDropdown.classList.remove('active');
+      const pinText = document.getElementById('menu-pin-note-text');
+      if (pinText) {
+        pinText.textContent = note.pinned ? 'Desafixar Nota' : 'Fixar Nota';
       }
-    });
+    }
+
+    if (menuPinNoteBtn) {
+      menuPinNoteBtn.addEventListener('click', () => {
+        const note = NoteStorage.notes ? NoteStorage.notes.find(n => n.id === currentNoteId) : null;
+        if (note) {
+          note.pinned = !note.pinned;
+          saveNotesToStorage();
+          updateNoteMenuState(note);
+          if (typeof renderDashboardNotes === 'function') renderDashboardNotes();
+          if (typeof renderNotesList === 'function') renderNotesList();
+        }
+        closeRightSidebar();
+      });
+    }
 
     if (menuDeleteNoteBtn) {
       menuDeleteNoteBtn.addEventListener('click', () => {
         if (currentNoteId) {
           deleteNote(currentNoteId);
-          if (noteMenuDropdown) noteMenuDropdown.classList.remove('active');
+          closeRightSidebar();
         }
       });
     }
-
-    
-
-    
 
     if (menuRemoveCoverBtn) {
       menuRemoveCoverBtn.addEventListener('click', async () => {
@@ -3979,7 +4056,7 @@
           note.cover = null;
           await saveNotesToStorage();
           setMode(currentMode);
-          if (noteMenuDropdown) noteMenuDropdown.classList.remove('active');
+          closeRightSidebar();
         }
       });
     }
@@ -4201,7 +4278,7 @@
       menuIconBtn.addEventListener('click', (e) => {
         try {
           if (e) e.stopPropagation();
-          if (noteMenuDropdown) noteMenuDropdown.classList.remove('active');
+          closeRightSidebar();
           const note = NoteStorage.notes.find(n => String(n.id) === String(currentNoteId));
           if (note) {
             selectedIconTemp = note.icon;
@@ -4470,9 +4547,11 @@
     }
 
     // Eventos dos Botões
-    editBtn.addEventListener('click', () => {
-      setMode(prefersMarkdown ? 'raw' : 'visual');
-    });
+    if (editBtn) {
+      editBtn.addEventListener('click', () => {
+        setMode(prefersMarkdown ? 'raw' : 'visual');
+      });
+    }
 
     // Modal de Preferências Listeners
     preferencesBtn.addEventListener('click', () => {
@@ -4669,45 +4748,43 @@
       return words.substring(0, 30).trim() || 'Nova Nota';
     }
 
-    saveBtn.addEventListener('click', async () => {
-      if (saveTimeout) {
-        clearTimeout(saveTimeout);
-        saveTimeout = null;
-      }
-      const note = NoteStorage.notes.find(n => n.id === currentNoteId);
-      if (note) {
-        if (currentMode === 'visual') {
-          note.content = getMarkdownFromHtml(editVisualPane);
-        } else if (currentMode === 'raw') {
-          note.content = rawPane.value;
+    if (saveBtn) {
+      saveBtn.addEventListener('click', async () => {
+        if (saveTimeout) {
+          clearTimeout(saveTimeout);
+          saveTimeout = null;
         }
-
-        const titleInput = document.getElementById('note-title-input');
-        let newTitle = titleInput ? titleInput.value.trim() : '';
-        if (!newTitle) {
-          newTitle = getTitleFromContent(note.content);
-          if (titleInput) titleInput.value = newTitle;
-        }
-
-        const desiredFilename = await getUniqueFilenameFS(newTitle, currentNoteId);
-        const newId = desiredFilename.replace('.md', '');
-
-        if (newId !== currentNoteId) {
-          if (isCapacitor) {
-            await NoteStorage.deleteNoteFS(currentNoteId);
+        const note = NoteStorage.notes.find(n => n.id === currentNoteId);
+        if (note) {
+          if (currentMode === 'visual') {
+            note.content = getMarkdownFromHtml(editVisualPane);
+          } else if (currentMode === 'raw') {
+            note.content = rawPane.value;
           }
-          await localStore.deleteNote(currentNoteId);
-          note.id = newId;
-          currentNoteId = newId;
-          await NoteStorage.saveNotesLS();
-        }
 
-        await saveNotesToStorage();
-        updateDocumentTitle(getNoteDisplayTitle(note));
-        renderNotesList();
-      }
-      setMode('read');
-    });
+          const titleInput = document.getElementById('note-title-input');
+          let newTitle = titleInput ? titleInput.value.trim() : '';
+          if (!newTitle) {
+            newTitle = getTitleFromContent(note.content);
+            if (titleInput) titleInput.value = newTitle;
+          }
+
+          if (newTitle && newTitle !== note.id) {
+            const oldId = note.id;
+            note.id = newTitle;
+            if (isCapacitor) {
+              await NoteStorage.deleteNoteFS(oldId);
+            }
+            currentNoteId = newTitle;
+          }
+
+          await saveNotesToStorage();
+          updateDocumentTitle(getNoteDisplayTitle(note));
+          renderNotesList();
+        }
+        setMode('read');
+      });
+    }
 
     const titleInput = document.getElementById('note-title-input');
     if (titleInput) {
@@ -4887,7 +4964,7 @@
 
     window.addEventListener('resize', autoResizeRawPane);
 
-    // Ajustar posição da barra de ferramentas de formatação acima do teclado virtual (Estilo Notion)
+    // Ajustar posição da barra de ferramentas de formatação acima do teclado virtual sem encolher o editor
     function updateFormatToolbarPosition() {
       const formatToolbar = document.getElementById('format-toolbar');
       if (!formatToolbar) return;
@@ -4900,15 +4977,13 @@
         if (window.innerHeight - viewport.height > 60) {
           formatToolbar.style.position = 'fixed';
           formatToolbar.style.bottom = `${offsetBottom}px`;
-          if (editorPanesWrapper) {
-            editorPanesWrapper.style.marginBottom = `${offsetBottom + 44}px`;
-          }
+          formatToolbar.style.zIndex = '1500';
         } else {
           formatToolbar.style.position = 'absolute';
           formatToolbar.style.bottom = '0';
-          if (editorPanesWrapper) {
-            editorPanesWrapper.style.marginBottom = (currentMode === 'read') ? '0px' : '44px';
-          }
+        }
+        if (editorPanesWrapper) {
+          editorPanesWrapper.style.marginBottom = '0px';
         }
       }
     }
@@ -4974,7 +5049,7 @@
     if (rawPaneWrapper) rawPaneWrapper.addEventListener('scroll', updateHeaderBackground);
 
     function updateDocumentTitle(title) {
-      document.title = title || "Bloco de Notas";
+      document.title = title || "Verbose";
     }
 
     function closeAutocomplete() {
@@ -5261,14 +5336,227 @@
       }
     }
 
-    // Ouvinte para dar dois cliques no painel de leitura e abrir o editor
+    function getCharOffsetFromPoint(container, clickX, clickY) {
+      if (!container) return 0;
+      let range = null;
+      if (document.caretRangeFromPoint) {
+        range = document.caretRangeFromPoint(clickX, clickY);
+      } else if (document.caretPositionFromPoint) {
+        const pos = document.caretPositionFromPoint(clickX, clickY);
+        if (pos) {
+          range = document.createRange();
+          range.setStart(pos.offsetNode, pos.offset);
+          range.collapse(true);
+        }
+      }
+      if (!range || !container.contains(range.startContainer)) return 0;
+
+      let offset = 0;
+      const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
+      while (walker.nextNode()) {
+        if (walker.currentNode === range.startContainer) {
+          offset += range.startOffset;
+          break;
+        }
+        offset += walker.currentNode.textContent.length;
+      }
+      return offset;
+    }
+
+    function setCaretAtCharOffset(container, targetOffset) {
+      if (!container) return;
+      const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
+      let currentOffset = 0;
+      let targetNode = null;
+      let nodeOffset = 0;
+
+      while (walker.nextNode()) {
+        const len = walker.currentNode.textContent.length;
+        if (currentOffset + len >= targetOffset) {
+          targetNode = walker.currentNode;
+          nodeOffset = targetOffset - currentOffset;
+          break;
+        }
+        currentOffset += len;
+      }
+
+      if (targetNode) {
+        const range = document.createRange();
+        range.setStart(targetNode, Math.min(nodeOffset, targetNode.textContent.length));
+        range.collapse(true);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+    }
+
+    // Ouvinte para dar um clique no painel de leitura e abrir o editor posicionado no ponto clicado
     if (readPaneWrapper) {
-      readPaneWrapper.addEventListener('dblclick', (e) => {
-        if (doubleClickEdit && currentMode === 'read') {
-          // Impede a propagação se o clique foi em algum elemento interativo (como um link)
+      readPaneWrapper.addEventListener('click', (e) => {
+        if (currentMode === 'read') {
+          // Impede a alternância para edição se o clique foi em um link interativo
           if (e.target.tagName === 'A' || e.target.closest('a')) return;
           
-          setMode(prefersMarkdown ? 'raw' : 'visual');
+          const clickX = e.clientX;
+          const clickY = e.clientY;
+          const charOffset = getCharOffsetFromPoint(readPane, clickX, clickY);
+          const targetMode = prefersMarkdown ? 'raw' : 'visual';
+
+          setMode(targetMode);
+
+          setTimeout(() => {
+            if (targetMode === 'visual' && editVisualPane) {
+              editVisualPane.focus();
+              setCaretAtCharOffset(editVisualPane, charOffset);
+            } else if (targetMode === 'raw' && rawPane) {
+              rawPane.focus();
+              const safeOffset = Math.min(charOffset, rawPane.value.length);
+              rawPane.setSelectionRange(safeOffset, safeOffset);
+            }
+          }, 40);
+        }
+      });
+    }
+
+    const titleDisplayContainerEl = document.getElementById('note-title-display-container');
+    if (titleDisplayContainerEl) {
+      titleDisplayContainerEl.addEventListener('click', () => {
+        if (currentMode === 'read') {
+          const targetMode = prefersMarkdown ? 'raw' : 'visual';
+          setMode(targetMode);
+          setTimeout(() => {
+            const activeInput = targetMode === 'raw' ? document.getElementById('note-title-input-raw') : document.getElementById('note-title-input');
+            if (activeInput) {
+              activeInput.focus();
+              if (!activeInput.value) activeInput.setSelectionRange(0, 0);
+            }
+          }, 40);
+        }
+      });
+    }
+
+    // Posição 1 do cursor e controle de placeholder ao clicar em campos vazios no título
+    const titleInputs = [document.getElementById('note-title-input'), document.getElementById('note-title-input-raw')].filter(Boolean);
+    titleInputs.forEach(input => {
+      input.addEventListener('focus', () => {
+        if (!input.value) {
+          setTimeout(() => input.setSelectionRange(0, 0), 10);
+        }
+      });
+      input.addEventListener('click', () => {
+        if (!input.value) {
+          input.setSelectionRange(0, 0);
+        }
+      });
+    });
+
+    // Trava rígida de 0px para scroll horizontal em todos os painéis
+    const allViewPanes = document.querySelectorAll('.view-pane');
+    allViewPanes.forEach(pane => {
+      pane.addEventListener('scroll', () => {
+        if (pane.scrollLeft !== 0) pane.scrollLeft = 0;
+      });
+    });
+
+    if (rawPane) {
+      rawPane.addEventListener('focus', () => {
+        if (!rawPane.value) {
+          setTimeout(() => rawPane.setSelectionRange(0, 0), 10);
+        }
+      });
+      rawPane.addEventListener('click', () => {
+        if (!rawPane.value) {
+          rawPane.setSelectionRange(0, 0);
+        }
+      });
+    }
+
+    // Finaliza a edição, esconde o cursor e salva automaticamente quando o teclado virtual sumir ou Voltar for pressionado
+    function finishEditing() {
+      if (document.activeElement && typeof document.activeElement.blur === 'function') {
+        document.activeElement.blur();
+      }
+      if (window.getSelection) {
+        window.getSelection().removeAllRanges();
+      }
+      if (rawPane) rawPane.blur();
+      if (editVisualPane) editVisualPane.blur();
+      const noteTitleInputEl = document.getElementById('note-title-input');
+      if (noteTitleInputEl) noteTitleInputEl.blur();
+      const noteTitleInputRawEl = document.getElementById('note-title-input-raw');
+      if (noteTitleInputRawEl) noteTitleInputRawEl.blur();
+
+      if (currentMode === 'visual' || currentMode === 'raw') {
+        if (saveBtn) {
+          saveBtn.click();
+        } else {
+          setMode('read');
+        }
+      }
+    }
+
+    function handleEditorBlur(e) {
+      setTimeout(() => {
+        const active = document.activeElement;
+        const noteTitleInputEl = document.getElementById('note-title-input');
+        const noteTitleInputRawEl = document.getElementById('note-title-input-raw');
+        const isEditingField = active && (
+          active === rawPane ||
+          active === editVisualPane ||
+          active === noteTitleInputEl ||
+          active === noteTitleInputRawEl ||
+          (editVisualPane && editVisualPane.contains(active))
+        );
+        if (!isEditingField && (currentMode === 'visual' || currentMode === 'raw')) {
+          finishEditing();
+        }
+      }, 150);
+    }
+
+    if (rawPane) rawPane.addEventListener('blur', handleEditorBlur);
+    if (editVisualPane) editVisualPane.addEventListener('blur', handleEditorBlur);
+    const noteTitleInputEl = document.getElementById('note-title-input');
+    if (noteTitleInputEl) noteTitleInputEl.addEventListener('blur', handleEditorBlur);
+    const noteTitleInputRawEl = document.getElementById('note-title-input-raw');
+    if (noteTitleInputRawEl) noteTitleInputRawEl.addEventListener('blur', handleEditorBlur);
+
+    let initialViewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    const handleViewportResize = () => {
+      const currentHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      // Se a altura da viewport expandiu de volta (teclado virtual fechou por botão Voltar ou outra ação)
+      if (currentHeight >= initialViewportHeight - 30 && (currentMode === 'visual' || currentMode === 'raw')) {
+        finishEditing();
+      }
+    };
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleViewportResize);
+    } else {
+      window.addEventListener('resize', handleViewportResize);
+    }
+
+    // Intercepta o botão Voltar (Android native, navegação popstate e teclado Escape)
+    window.addEventListener('popstate', (e) => {
+      if (currentMode === 'visual' || currentMode === 'raw') {
+        finishEditing();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' || e.key === 'GoBack' || e.keyCode === 27 || e.keyCode === 4) {
+        if (currentMode === 'visual' || currentMode === 'raw') {
+          e.preventDefault();
+          finishEditing();
+        }
+      }
+    });
+
+    if (typeof Capacitor !== 'undefined' && Capacitor.Plugins && Capacitor.Plugins.App) {
+      Capacitor.Plugins.App.addListener('backButton', () => {
+        if (currentMode === 'visual' || currentMode === 'raw') {
+          finishEditing();
+        } else if (sidebar && sidebar.classList.contains('open')) {
+          closeSidebar();
         }
       });
     }

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mkd-notes-v6';
+const CACHE_NAME = 'mkd-notes-v11';
 const ASSETS = [
   './',
   './index.html',

@@ -1,7 +1,7 @@
 {
-  "name": "Bloco de Notas Markdown",
-  "short_name": "Notas MD",
-  "description": "Bloco de Notas Markdown offline e rápido.",
+  "name": "Verbose",
+  "short_name": "Verbose",
+  "description": "Verbose - Bloco de Notas Markdown offline e rápido.",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#000000",
