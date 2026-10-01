@@ -172,6 +172,21 @@ meu-bloco-de-notas/
 * Resposta Imediata em 1 Clique na Barra Lateral:
   * Invocação de `finishEditing()` síncrona e desfoque de todos os campos de texto/teclado virtual no exato momento da abertura das barras laterais esquerda e direita.
   * Aplicação de `touch-action: manipulation;` e `-webkit-tap-highlight-color: transparent;` nos botões da barra lateral (`.sidebar-action-btn`, `.note-item`), eliminando atrasos de toque mobile e garantindo acionamento instantâneo no 1º clique.
+* Campo de Título com Placeholder Esmaecido e Título Automático do Texto:
+  * O campo de título da nota (`#note-title-input` e `#note-title-input-raw`) agora permanece limpo exibindo apenas o texto esmaecido de placeholder ("Título da nota") até que o usuário decida digitar um nome explicitamente.
+  * Se nenhum título customizado for digitado, o título da nota (em listas, dashboard e modo leitura) é gerado dinamicamente a partir do início do conteúdo escrito (`getTitleFromContent`).
+  * O auto-salvamento e a troca de modos não forçam mais texto gerado para dentro do campo de input, preservando o placeholder esmaecido de forma limpa.
+* Função de Tags no Menu Direito da Nota:
+  * Inserção do botão **Tags** (`#menu-tags-btn`) no menu de opções da nota (`#right-sidebar`).
+  * Integração completa com o modal de gerenciamento de tags (`#tag-manager-modal`), permitindo adicionar novas tags ou alternar tags existentes com 1 toque por meio de chips interativos.
+  * Sincronização e persistência de tags na nota, no cabeçalho e nos metadados do arquivo Markdown.
+* Redesign do Menu de Opções da Nota (Right Sidebar):
+  * Redesenho completo inspirado na captura de tela (`Screenshot_20260901_001410_Chrome.jpg`), incluindo:
+    - Campo de busca rápida de ações (`#note-action-search`) em largura total, sem botões extras de fechar (fechamento via toque fora ou gesto).
+    - Itens com ícones outline minimalistas: Capa, Ícone, Tags, Fixar Nota, Copiar Markdown, **Baixar** (com download direto do arquivo `.md` da nota individual) e Excluir Nota.
+    - Indicadores sutis à direita (`>` e atalhos).
+    - Divisores finos e rodapé com metadados da nota (identificação "Verbose" e timestamp dinâmico de edição).
+    - Efeito visual com fundo escuro profundo `#121217`, `backdrop-filter: blur(24px)` e feedback de toque instantâneo.
 
 ## 5. Regras de Desenvolvimento (Restrições Importantes)
 1. **Consistência de Contexto**: Sempre use esta memória (`PROJECT_MEMORY.md`) para obter o contexto do projeto antes de propor mudanças.

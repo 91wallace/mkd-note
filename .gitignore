@@ -1,1 +1,8 @@
 node_modules/
+
+.agents/
+.gemini/
+.impeccable/
+.sessions_state.json
+nohup.out
+*.nohup.out

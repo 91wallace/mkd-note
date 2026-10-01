@@ -14,7 +14,7 @@
     "@capawesome/capacitor-file-picker": "^6.2.0"
   },
   "devDependencies": {
-    "@capacitor/cli": "^8.4.2",
+    "@capacitor/cli": "^8.5.1",
     "live-server": "^1.2.0"
   }
 }
